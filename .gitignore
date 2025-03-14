@@ -1,8 +1,11 @@
-eval "$(ssh-agent -s)"
-eval "$(ssh-agent -s)".pub
+# Remove unrelated shell commands
+# cache and python bytecode
+src/__pycache__/
 
-#cache
-src/__pycache__/*
-
-
+# ignore samples directory
 samples/
+
+# Ignore entire assets directory
+src/assets/
+
+src/test_audio/
