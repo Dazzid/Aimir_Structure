@@ -1,0 +1,156 @@
+# Chord Chart
+
+Bar 1 | Bar 2 | Bar 3 | Bar 4
+-----------------------------
+D7 | C♯maj7 | G♯7 | C♯aug
+
+
+Bar 5 | Bar 6 | Bar 7 | Bar 8
+-----------------------------
+Dmin7 | C♯aug | Fmin7 | Aaug
+
+
+Bar 9 | Bar 10 | Bar 11 | Bar 12
+--------------------------------
+G♯7 | B-min7 | D7 | C♯aug
+
+
+Bar 13 | Bar 14 | Bar 15 | Bar 16
+---------------------------------
+G♯maj7 | B-min7 | F7 | Gmin7
+
+
+Bar 17 | Bar 18 | Bar 19 | Bar 20
+---------------------------------
+G♯aug | Gmin7 | Dmin7 | Amaj7
+
+
+Bar 21 | Bar 22 | Bar 23 | Bar 24
+---------------------------------
+D7 | Emin7 | Dmin7 | Gmin7
+
+
+Bar 25 | Bar 26 | Bar 27 | Bar 28
+---------------------------------
+Emin7 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 29 | Bar 30 | Bar 31 | Bar 32
+---------------------------------
+Amin7 | C♯ | Dmin7 | B-maj7
+
+
+Bar 33 | Bar 34 | Bar 35 | Bar 36
+---------------------------------
+G♯aug | Gmin7 | Dmin7 | Aaug
+
+
+Bar 37 | Bar 38 | Bar 39 | Bar 40
+---------------------------------
+Dmin7 | Gmin7 | F7 | Gmin7
+
+
+Bar 41 | Bar 42 | Bar 43 | Bar 44
+---------------------------------
+Gmin7 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 45 | Bar 46 | Bar 47 | Bar 48
+---------------------------------
+Dmin7 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 49 | Bar 50 | Bar 51 | Bar 52
+---------------------------------
+Amin7 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 53 | Bar 54 | Bar 55 | Bar 56
+---------------------------------
+Dmin7 | Gmin7 | Dmin7 | B-7
+
+
+Bar 57 | Bar 58 | Bar 59 | Bar 60
+---------------------------------
+D7 | Gmin7 | D | B-maj7
+
+
+Bar 61 | Bar 62 | Bar 63 | Bar 64
+---------------------------------
+D | Gmin7 | D | B-maj7
+
+
+Bar 65 | Bar 66 | Bar 67 | Bar 68
+---------------------------------
+A7 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 69 | Bar 70 | Bar 71 | Bar 72
+---------------------------------
+Asus4 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 73 | Bar 74 | Bar 75 | Bar 76
+---------------------------------
+C♯ | Gmin7 | Dmin7 | G♯maj7
+
+
+Bar 77 | Bar 78 | Bar 79 | Bar 80
+---------------------------------
+Dmin7 | Gmin7 | C♯maj7 | B-7
+
+
+Bar 81 | Bar 82 | Bar 83 | Bar 84
+---------------------------------
+Dmin7 | G♯aug | Dmin7 | B-maj7
+
+
+Bar 85 | Bar 86 | Bar 87 | Bar 88
+---------------------------------
+Aaug | Gmin7 | Dmin7 | F7
+
+
+Bar 89 | Bar 90 | Bar 91 | Bar 92
+---------------------------------
+Emin7 | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 93 | Bar 94 | Bar 95 | Bar 96
+---------------------------------
+Dmin7 | G♯7 | Dmin7 | B-maj7
+
+
+Bar 97 | Bar 98 | Bar 99 | Bar 100
+----------------------------------
+B-maj7 | Gmin7 | Dmin7 | F7
+
+
+Bar 101 | Bar 102 | Bar 103 | Bar 104
+-------------------------------------
+Dmin7 | Gmin7 | C♯aug | F7
+
+
+Bar 105 | Bar 106 | Bar 107 | Bar 108
+-------------------------------------
+Aaug | Gmin7 | Dmin7 | B-maj7
+
+
+Bar 109 | Bar 110 | Bar 111 | Bar 112
+-------------------------------------
+A7 | Dmin7 | Dmin7 | F7
+
+
+Bar 113 | Bar 114 | Bar 115 | Bar 116
+-------------------------------------
+A7 | Gmin7 | C♯aug | Dmin7
+
+
+Bar 117 | Bar 118 | Bar 119 | Bar 120
+-------------------------------------
+Dmin7 | Dmin7 | Dmin7 | B-7
+
+
+Bar 121
+-------
+Aaug
+
