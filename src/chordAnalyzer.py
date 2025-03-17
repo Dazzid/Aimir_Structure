@@ -6,6 +6,34 @@ from music21 import converter, chord, note, stream, pitch
 from collections import Counter
 import os
 
+
+CHORD_COLORS = {
+    # Basic triads
+    "": "#fcc203",       # Major (blue)
+    "m": "#03a5fc",      # Minor (mint green)
+    "dim": "#ff33eb",    # Diminished (pink)
+    "aug": "#fc7600",    # Augmented (gold)
+    
+    # Seventh chords
+    "7": "#fc4800",      # Dominant 7th (red)
+    "maj7": "#fcba03",   # Major 7th (purple)
+    "m7": "#039dfc",     # Minor 7th (cyan)
+    "dim7": "#ff33eb",   # Diminished 7th (magenta)
+    "m7b5": "#8a82ff",   # Half-diminished (orange)
+    
+    # Extended chords
+    "9": "#fc4800",      # Dominant 9th (violet)
+    "maj9": "#fcba03",   # Major 9th (lime green)
+    "m9": "#039dfc",     # Minor 9th (royal blue)
+    
+    # Suspended & other
+    "sus4": "#b8b8b8",   # Suspended (light gray)
+    "5": "#b8b8b8",      # Power chord (gray)
+    
+    # Default
+    "default": "#d4d4d4" # Other chord types (light gray)
+}
+
 # Cell 2: Define chord structures with their characteristic intervals
 CHORD_TYPES = {
     # Basic triads
@@ -105,7 +133,7 @@ def load_midi_notes(midi_path, source_name="unknown"):
                         'start': float(note_obj.offset),
                         'end': float(note_obj.offset + note_obj.duration.quarterLength),
                         'pitch': note_obj.pitch.midi,
-                        'name': note_obj.pitch.name,
+                        'name': fix_note_name(note_obj.pitch.name),
                         'pitch_class': note_obj.pitch.pitchClass,
                         'velocity': note_obj.volume.velocity if hasattr(note_obj.volume, 'velocity') else 64,
                         'source': source_name
@@ -116,7 +144,7 @@ def load_midi_notes(midi_path, source_name="unknown"):
                             'start': float(note_obj.offset),
                             'end': float(note_obj.offset + note_obj.duration.quarterLength),
                             'pitch': p.midi,
-                            'name': p.name,
+                            'name': fix_note_name(p.name),
                             'pitch_class': p.pitchClass,
                             'velocity': note_obj.volume.velocity if hasattr(note_obj.volume, 'velocity') else 64,
                             'source': source_name
@@ -214,18 +242,59 @@ def visualize_notes_in_bars(notes, num_bars=1, beats_per_bar=4, start_bar=0):
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.show()
+    
+# Add or check that this function is defined before it's used in analyze_time_windows
+def get_interval_name(interval):
+    """Get a readable name for an interval number"""
+    interval_names = {
+        0: "Root",
+        1: "b9",
+        2: "9",
+        3: "b3",
+        4: "3",
+        5: "11",
+        6: "b5",
+        7: "5",
+        8: "#5",
+        9: "6",
+        10: "b7",
+        11: "7"
+    }
+    return interval_names.get(interval, f"Int{interval}")
+
 #---------------------------------------------------------------------------
 # Cell 5: Improved chord identification from intervals
-def identify_chord_from_intervals(intervals):
+def identify_chord_from_intervals(intervals, interval_weights=None):
     """
-    Identify chord type from intervals, with special focus on extensions
+    Identify chord type from intervals, with improved dominant chord detection
     
     Args:
         intervals: List of intervals relative to root
+        interval_weights: Optional dictionary of interval weights for better decision making
     
     Returns:
         String describing the chord type
     """
+    # First handle the case where we have weights to make better decisions
+    if interval_weights is not None:
+        # If both b7 and maj7 are present, use the one with higher weight
+        if 10 in intervals and 11 in intervals:
+            flat_7_weight = interval_weights.get(10, 0)
+            maj_7_weight = interval_weights.get(11, 0)
+            
+            # If flat 7 is significant enough, remove maj7 from consideration
+            if flat_7_weight > maj_7_weight * 1.2:  # 20% stronger presence
+                intervals = [i for i in intervals if i != 11]
+                print(f"Prioritizing flat 7 (weight {flat_7_weight:.2f}) over maj7 (weight {maj_7_weight:.2f})")
+            # If maj7 is significantly stronger, remove flat 7
+            elif maj_7_weight > flat_7_weight * 1.2:
+                intervals = [i for i in intervals if i != 10]
+                print(f"Prioritizing maj7 (weight {maj_7_weight:.2f}) over flat 7 (weight {flat_7_weight:.2f})")
+            # If they're close in weight, slightly prefer dominant (b7)
+            else:
+                intervals = [i for i in intervals if i != 11]
+                print(f"Both 7ths similar weight, preferring dominant: b7={flat_7_weight:.2f}, maj7={maj_7_weight:.2f}")
+    
     # First check for diminished chords
     if 0 in intervals and 3 in intervals and 6 in intervals:
         if 9 in intervals:
@@ -233,6 +302,14 @@ def identify_chord_from_intervals(intervals):
         if 10 in intervals:
             return "m7b5"
         return "dim"
+    
+    # Special case for altered dominant chords: Root + b7 + b5
+    if 0 in intervals and 10 in intervals and 6 in intervals and 4 not in intervals and 3 not in intervals:
+        return "7b5"  # Dominant 7 flat 5
+    
+    # Special case for dominant with no 3rd but has b7
+    if 0 in intervals and 10 in intervals and 7 in intervals and 4 not in intervals and 3 not in intervals:
+        return "7no3"  # Dominant 7 no 3rd
     
     # Check exact match for specific chord types
     for chord_type, data in CHORD_TYPES.items():
@@ -299,6 +376,14 @@ def identify_chord_from_intervals(intervals):
                 return "m7"
             return "m"  # Minor triad
         
+        # No third but has dominant 7th
+        elif has_minor_seventh:
+            if has_diminished_fifth:
+                return "7b5"  # Dom7 with flat 5, no 3rd
+            if has_perfect_fifth:
+                return "7no3"  # Dom7 with no 3rd
+            return "7"  # Best guess for a dominant with missing 3rd and 5th
+            
         elif 5 in intervals:  # No third but has fourth
             if has_minor_seventh:
                 return "7sus4"
@@ -310,23 +395,19 @@ def identify_chord_from_intervals(intervals):
     
     return ""  # Unrecognized or incomplete
 
-def get_interval_name(interval):
-    """Get a readable name for an interval number"""
-    interval_names = {
-        0: "Root",
-        1: "b9",
-        2: "9",
-        3: "b3",
-        4: "3",
-        5: "11",
-        6: "b5",
-        7: "5",
-        8: "#5",
-        9: "6",
-        10: "b7",
-        11: "7"
-    }
-    return interval_names.get(interval, f"Int{interval}")
+
+def fix_note_name(note_name):
+    """
+    Fix note names by replacing music21's terrible minus sign flats with proper 'b' flats
+    
+    Args:
+        note_name: Note name from music21 (like 'B-' or 'E-')
+    
+    Returns:
+        Fixed note name (like 'Bb' or 'Eb')
+    """
+    # Replace the minus sign used for flats with 'b'
+    return note_name.replace('-', 'b')
 
 #---------------------------------------------------------------------------
 # Cell 6: Enhanced visualization of time windows with RAW WEIGHTS
@@ -521,7 +602,7 @@ def analyze_time_windows(notes, start_bar, beats_per_bar=4, min_chord_duration=0
                     
         # Identify chord based on significant intervals
         chord_type = identify_chord_from_intervals(significant_intervals)
-        chord_name = f"{bass_note['name']}{chord_type}"
+        chord_name = f"{fix_note_name(bass_note['name'])}{chord_type}"
         
         # Store the result
         chord_windows.append({
@@ -777,54 +858,6 @@ def identify_precise_chord(intervals):
     
     # If no match found, return an empty string
     return ""
-#---------------------------------------------------------------------------
-def identify_precise_chord(intervals):
-    """
-    Identify a SINGLE, PRECISE chord type based on strict interval matching
-    
-    Args:
-        intervals (list): List of interval classes present
-    
-    Returns:
-        str: A single, unambiguous chord type or empty string
-    """
-    # Prioritize most specific chord types first
-    chord_hierarchy = [
-        # Extended and altered chords (most specific)
-        ("dim7", [0, 3, 6, 9]),     # Fully diminished seventh
-        ("m7b5", [0, 3, 6, 10]),    # Half-diminished seventh
-        ("7b9", [0, 4, 7, 10, 1]),  # Dominant seventh flat ninth
-        ("7#9", [0, 4, 7, 10, 3]),  # Dominant seventh sharp ninth
-        ("9", [0, 4, 7, 10, 2]),    # Dominant ninth
-        ("m9", [0, 3, 7, 10, 2]),   # Minor ninth
-        ("maj9", [0, 4, 7, 11, 2]), # Major ninth
-        
-        # Seventh chords
-        ("dim", [0, 3, 6]),         # Diminished triad
-        ("m7", [0, 3, 7, 10]),      # Minor seventh
-        ("7", [0, 4, 7, 10]),       # Dominant seventh
-        ("maj7", [0, 4, 7, 11]),    # Major seventh
-        
-        # Suspended chords
-        ("7sus4", [0, 5, 7, 10]),   # Dominant seventh suspended
-        ("sus4", [0, 5, 7]),        # Suspended fourth
-        
-        # Basic triads
-        ("aug", [0, 4, 8]),         # Augmented triad
-        ("m", [0, 3, 7]),           # Minor triad
-        ("", [0, 4, 7])             # Major triad
-    ]
-    
-    # Convert intervals to a set for efficient checking
-    interval_set = set(intervals)
-    
-    # Find the first chord type that matches all its required intervals
-    for chord_type, required_intervals in chord_hierarchy:
-        if all(interval in interval_set for interval in required_intervals):
-            return chord_type
-    
-    # If no match found, return an empty string
-    return ""
 
 #---------------------------------------------------------------------------
 # Chord Identification Refinement Notebook
@@ -941,3 +974,442 @@ def analyze_progression_with_unique_chords(notes, start_bar, num_bars=4, beats_p
     ]
     
     return refined_results
+
+# Add this function after all your existing functions,
+# right before/after the "Load notes from the MIDI files" section
+
+def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16):
+    """
+    Extract ALL chords from the entire piece automatically and display in a multi-row timeline
+    
+    Args:
+        notes: Combined notes from bass and harmony
+        beats_per_bar: Beats per bar
+        min_chord_duration: Minimum duration for chord identification
+        bars_per_row: Number of bars to display in each row of the visualization
+    """
+    # [Keep the existing code until the plotting section]
+    
+    # Temporarily disable all print statements
+    import sys
+    original_stdout = sys.stdout
+    sys.stdout = open('/dev/null', 'w')
+    
+    # Temporarily disable all plotting
+    original_plt_show = plt.show
+    plt.show = lambda: None
+    
+    # Close all existing figures to prevent warnings
+    plt.close('all')
+    
+    try:
+        # Determine the total length of the song automatically
+        if not notes:
+            return []
+            
+        # Find the last note's end time
+        last_note_end = max(note['end'] for note in notes)
+        
+        # Calculate total number of bars (rounding up to include partial bars)
+        import math
+        total_bars = math.ceil(last_note_end / beats_per_bar)
+        
+        # Extract all chords from all bars
+        all_chords = []
+        
+        for bar_idx in range(total_bars):
+            # Calculate bar boundaries
+            start_beat = bar_idx * beats_per_bar
+            end_beat = (bar_idx + 1) * beats_per_bar
+            
+            # Get notes in this bar
+            bar_notes = [n for n in notes if n['end'] > start_beat and n['start'] < end_beat]
+            
+            # Skip empty bars
+            if not bar_notes:
+                continue
+                
+            # Separate bass and harmony
+            bass_notes = [n for n in bar_notes if n['source'] == 'bass']
+            harmony_notes = [n for n in bar_notes if n['source'] == 'harmony']
+            
+            # Skip if no bass notes
+            if not bass_notes:
+                continue
+                
+            # Sort bass notes by start time
+            bass_notes.sort(key=lambda x: x['start'])
+            
+            # Filter out very short bass notes
+            significant_bass_notes = []
+            for bn in bass_notes:
+                duration = min(bn['end'], end_beat) - max(bn['start'], start_beat)
+                if duration >= min_chord_duration:
+                    significant_bass_notes.append(bn)
+            
+            # If no significant bass notes, use the longest one
+            if not significant_bass_notes and bass_notes:
+                longest_bass = max(bass_notes, 
+                                  key=lambda x: min(x['end'], end_beat) - max(x['start'], start_beat))
+                significant_bass_notes = [longest_bass]
+            
+            # Analyze each significant bass note
+            for bass_note in significant_bass_notes:
+                # Define precise time window
+                window_start = max(bass_note['start'], start_beat)
+                window_end = min(bass_note['end'], end_beat)
+                root_pc = bass_note['pitch_class']
+                
+                # Find harmony notes active during this window
+                active_harmony = []
+                for hn in harmony_notes:
+                    if hn['start'] < window_end and hn['end'] > window_start:
+                        overlap_start = max(window_start, hn['start'])
+                        overlap_end = min(window_end, hn['end'])
+                        overlap_duration = overlap_end - overlap_start
+                        
+                        active_harmony.append({
+                            'name': hn['name'],
+                            'pitch_class': hn['pitch_class'],
+                            'duration': overlap_duration,
+                            'interval': (hn['pitch_class'] - root_pc) % 12
+                        })
+                
+                # Calculate duration for each interval
+                interval_durations = {}
+                for interval in range(12):
+                    # Root (interval 0) gets duration of bass note
+                    if interval == 0:
+                        interval_durations[interval] = window_end - window_start
+                        continue
+                    
+                    # Other intervals get sum of harmony note durations
+                    matching_notes = [n for n in active_harmony if n['interval'] == interval]
+                    if matching_notes:
+                        interval_durations[interval] = sum(n['duration'] for n in matching_notes)
+                
+                # Calculate normalized weights
+                total_duration = window_end - window_start
+                interval_weights = {i: d/total_duration for i, d in interval_durations.items()}
+                
+                # Determine significant intervals
+                threshold = 0.25
+                significant_intervals = sorted([
+                    i for i, w in interval_weights.items() if w >= threshold or i == 0
+                ])
+                
+                # Special consideration for chord tones
+                for special_interval in [3, 4, 7, 10, 11]:
+                    if special_interval in interval_durations and special_interval not in significant_intervals:
+                        if interval_weights[special_interval] >= 0.15:
+                            significant_intervals.append(special_interval)
+                            significant_intervals.sort()
+                
+                # Identify chord
+                chord_type = identify_chord_from_intervals(significant_intervals)
+                chord_name = f"{fix_note_name(bass_note['name'])}{chord_type}"
+                
+                # Store chord
+                all_chords.append({
+                    'bar': bar_idx + 1,
+                    'beat_start': window_start,
+                    'beat_end': window_end,
+                    'root': bass_note['name'],
+                    'chord_type': chord_type,
+                    'chord_name': chord_name,
+                    'intervals': significant_intervals
+                })
+                
+    finally:
+        # Restore stdout and plt.show
+        sys.stdout = original_stdout
+        plt.show = original_plt_show
+    
+    # Print only the total number of chords found
+    print(f"Extracted {len(all_chords)} chords across {total_bars} bars")
+    
+    # NOW PLOT THE MULTI-ROW TIMELINE instead of the original one
+    plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
+    
+    return all_chords
+
+def plot_chord_timeline(chords, total_bars, beats_per_bar=4):
+    """
+    Plot ONE timeline with all extracted chords
+    """
+    # Close any existing plots
+    plt.close('all')
+    
+    # Create the figure with appropriate width based on song length
+    width = max(20, total_bars * 1.2)  # Minimum width of 20, scales with song length
+    fig, ax = plt.subplots(figsize=(width, 6))
+    
+    # Draw the chords
+    for chord in chords:
+        start = chord['beat_start']
+        end = chord['beat_end']
+        name = chord['chord_name']
+        chord_type = chord['chord_type']
+        
+        # Determine color
+        if chord_type.startswith('m7'):
+            color = '#8dd3c7'  # Minor seventh
+        elif chord_type.startswith('m'):
+            color = '#ffffb3'  # Minor
+        elif chord_type == '7' or chord_type.endswith('7'):
+            color = '#fdb462'  # Dominant seventh
+        elif chord_type.startswith('maj'):
+            color = '#b3de69'  # Major seventh or major ninth
+        elif chord_type in ['dim', 'dim7']:
+            color = '#fb8072'  # Diminished
+        elif chord_type == '':
+            color = '#80b1d3'  # Major
+        else:
+            color = '#d9d9d9'  # Other
+        
+        # Draw chord rectangle
+        ax.add_patch(plt.Rectangle(
+            (start, 0.1), 
+            end - start, 
+            0.8, 
+            facecolor=color,
+            edgecolor='black',
+            alpha=0.7
+        ))
+        
+        # Add chord name
+        plt.text(
+            start + (end - start)/2, 
+            0.5, 
+            name, 
+            ha='center', 
+            va='center',
+            fontsize=10,
+            fontweight='bold'
+        )
+    
+    # Draw bar lines and numbers
+    for bar in range(total_bars + 1):
+        bar_pos = bar * beats_per_bar
+        plt.axvline(x=bar_pos, color='black', linestyle='-', alpha=0.5)
+        if bar < total_bars:
+            plt.text(bar_pos + 0.1, 0.95, f"{bar+1}", fontsize=9)
+    
+    # Draw beat lines (only if the visualization isn't too crowded)
+    if total_bars <= 32:  # Only show beat lines for shorter songs
+        for beat in range(total_bars * beats_per_bar + 1):
+            plt.axvline(x=beat, color='gray', linestyle=':', alpha=0.3)
+    
+    # Configure axes
+    plt.xlim(0, total_bars * beats_per_bar)
+    plt.ylim(0, 1)
+    plt.title('Complete Chord Progression Timeline', fontsize=14)
+    plt.xlabel('Beats', fontsize=12)
+    
+    # Remove y-axis ticks and labels
+    plt.yticks([])
+    
+    # Add legend
+    legend_handles = [
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS[''], alpha=0.7, edgecolor='black', label='Major'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m'], alpha=0.7, edgecolor='black', label='Minor'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['7'], alpha=0.7, edgecolor='black', label='Dominant 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['maj7'], alpha=0.7, edgecolor='black', label='Major 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m7'], alpha=0.7, edgecolor='black', label='Minor 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['dim'], alpha=0.7, edgecolor='black', label='Diminished'),
+        # Add more legend items as needed
+    ]
+    plt.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+              ncol=7, frameon=False)
+    
+    plt.tight_layout()
+    plt.show()
+    
+
+
+# 2. Create a custom text color function that selects an appropriate text color
+# based on the background color brightness:
+
+def get_text_color(background_color):
+    """
+    Determine whether to use black or white text based on background color brightness
+    
+    Args:
+        background_color: Hex color string (e.g., '#f55442')
+        
+    Returns:
+        String 'black' or 'white' for optimal contrast
+    """
+    # Convert hex color to RGB values
+    r = int(background_color[1:3], 16) / 255.0
+    g = int(background_color[3:5], 16) / 255.0
+    b = int(background_color[5:7], 16) / 255.0
+    
+    # Calculate perceived brightness (ITU-R BT.709 standard)
+    brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    
+    # Use white text on dark backgrounds, black text on light backgrounds
+    return 'white' if brightness < 0.5 else 'black'
+
+def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_row=16):
+    """
+    Plot a chord timeline with multiple rows for better readability in publications
+    
+    Args:
+        chords: List of chord dictionaries from analysis
+        total_bars: Total number of bars in the piece
+        beats_per_bar: Number of beats per bar
+        bars_per_row: Number of bars to display in each row
+    """
+    # Calculate number of rows needed
+    num_rows = (total_bars + bars_per_row - 1) // bars_per_row
+    
+    # Create figure with appropriate dimensions
+    fig, axes = plt.subplots(num_rows, 1, figsize=(15, 2.5*num_rows + 1), sharex=False)
+    
+    # Ensure axes is always a list even with single row
+    if num_rows == 1:
+        axes = [axes]
+    
+    # Process each row
+    for row in range(num_rows):
+        ax = axes[row]
+        
+        # Calculate bar range for this row
+        start_bar = row * bars_per_row
+        end_bar = min((row + 1) * bars_per_row, total_bars)
+        
+        # Calculate beat range
+        start_beat = start_bar * beats_per_bar
+        end_beat = end_bar * beats_per_bar
+        
+        # Find chords that overlap with this row's time window
+        row_chords = [c for c in chords 
+                     if c['beat_end'] > start_beat and c['beat_start'] < end_beat]
+        
+        # Debug info
+        print(f"Row {row+1}: Bars {start_bar+1}-{end_bar}, Beats {start_beat}-{end_beat}, Chords: {len(row_chords)}")
+        
+        # Draw the chords for this row
+        for chord in row_chords:
+            # Get chord properties with proper bounds for this row
+            chord_start = max(chord['beat_start'], start_beat)
+            chord_end = min(chord['beat_end'], end_beat)
+            name = chord['chord_name']
+            chord_type = chord['chord_type']
+            
+            # Skip if chord doesn't actually appear in this row's range
+            if chord_end <= chord_start:
+                continue
+                
+            # Adjust position to be relative to the row's start
+            relative_start = chord_start - start_beat
+            relative_end = chord_end - start_beat
+            
+            # First try the exact chord type
+            if chord_type in CHORD_COLORS:
+                color = CHORD_COLORS[chord_type]
+            # Then try prefixes for types like m7, maj7, etc.
+            elif chord_type.startswith('m7'):
+                color = CHORD_COLORS['m7']
+            elif chord_type.startswith('m'):
+                color = CHORD_COLORS['m']
+            elif chord_type.startswith('maj'):
+                color = CHORD_COLORS['maj7']
+            elif chord_type.endswith('7'):
+                color = CHORD_COLORS['7']
+            else:
+                color = CHORD_COLORS['default']
+            
+            # Determine optimal text color based on background
+            text_color = get_text_color(color)
+            
+            # Draw chord rectangle
+            ax.add_patch(plt.Rectangle(
+                (relative_start, 0.1), 
+                relative_end - relative_start, 
+                0.8, 
+                facecolor=color,
+                edgecolor='black',
+                alpha=0.7
+            ))
+            
+            # Add chord name if there's enough space
+            if relative_end - relative_start >= 0.15:  # Can use smaller threshold since vertical text takes less width
+                ax.text(
+                    relative_start + (relative_end - relative_start)/2, 
+                    0.5, 
+                    name, 
+                    ha='center',
+                    va='center',
+                    fontsize=8,
+                    fontweight='bold',
+                    rotation=90,
+                    rotation_mode='anchor',
+                    color=text_color  # Use the calculated optimal text color
+                )
+        
+        # Draw bar lines and numbers for this row
+        for bar in range(start_bar, end_bar + 1):
+            # Calculate beat position relative to row start
+            bar_pos = (bar - start_bar) * beats_per_bar
+            
+            # Draw the bar line
+            ax.axvline(x=bar_pos, color='black', linestyle='-', alpha=0.5)
+            
+            # Add bar number (except for the end of row line)
+            if bar < end_bar:
+                ax.text(bar_pos + 0.1, 0.95, f"{bar+1}", fontsize=8)
+        
+        # Draw beat lines
+        for beat in range(start_bar * beats_per_bar, end_bar * beats_per_bar + 1):
+            # Calculate beat position relative to row start
+            beat_pos = beat - start_beat
+            
+            # Draw beat line
+            ax.axvline(x=beat_pos, color='gray', linestyle=':', alpha=0.3)
+        
+        # Configure this row's axes
+        ax.set_xlim(0, (end_bar - start_bar) * beats_per_bar)
+        ax.set_ylim(0, 1)
+        ax.set_title(f"Bars {start_bar+1} to {end_bar}", fontsize=10)
+        
+        # Remove y-axis ticks and labels
+        ax.set_yticks([])
+        
+        # Add x-axis (beats)
+        beat_ticks = [i for i in range(0, (end_bar - start_bar) * beats_per_bar + 1, beats_per_bar)]
+        beat_labels = [f"{start_bar * beats_per_bar + i}" for i in beat_ticks]
+        ax.set_xticks(beat_ticks)
+        ax.set_xticklabels(beat_labels)
+        ax.set_xlabel("Beat", fontsize=8)
+    
+    # Add a common legend at the bottom
+    legend_handles = [
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS[''], alpha=0.7, edgecolor='black', label='Major'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m'], alpha=0.7, edgecolor='black', label='Minor'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['7'], alpha=0.7, edgecolor='black', label='Dominant 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['maj7'], alpha=0.7, edgecolor='black', label='Major 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m7'], alpha=0.7, edgecolor='black', label='Minor 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['dim'], alpha=0.7, edgecolor='black', label='Diminished'),
+        # Add more legend items as needed
+    ]
+    fig.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.5, 0.03),
+          ncol=4, frameon=False)
+    
+    # Add overall title
+    plt.suptitle(f'Chord Progression Timeline ({total_bars} bars)', fontsize=14, y=0.98)
+    
+    # Adjust layout
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.4, bottom=0.1, top=0.92)
+    
+    # Save as vector graphic for paper
+    plt.savefig('chord_progression.pdf', bbox_inches='tight')
+    plt.savefig('chord_progression.svg', bbox_inches='tight')
+    plt.savefig('chord_progression.png', dpi=300, bbox_inches='tight')
+    
+    # Show the plot
+    plt.show()
+    
+    print(f"Visualization saved as: chord_progression.pdf, chord_progression.svg, and chord_progression.png")
