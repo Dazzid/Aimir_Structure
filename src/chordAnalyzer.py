@@ -1,4 +1,4 @@
-# Cell 1: Import libraries
+#Analyse chords in a MIDI file
 import numpy as np
 import matplotlib.pyplot as plt
 import music21
@@ -86,7 +86,7 @@ CHORD_TYPES = {
         "required": [0, 5, 10]
     }
 }
-
+#---------------------------------------------------------------------------
 # Cell 3: Define function to load MIDI notes
 def load_midi_notes(midi_path, source_name="unknown"):
     """Load notes from a MIDI file with source labeling"""
@@ -131,7 +131,7 @@ def load_midi_notes(midi_path, source_name="unknown"):
     except Exception as e:
         print(f"Error loading MIDI file {midi_path}: {e}")
         return []
-
+#---------------------------------------------------------------------------
 # Cell 4: Function to visualize notes in a bar with enhanced display
 def visualize_notes_in_bars(notes, num_bars=1, beats_per_bar=4, start_bar=0):
     """
@@ -214,7 +214,7 @@ def visualize_notes_in_bars(notes, num_bars=1, beats_per_bar=4, start_bar=0):
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.show()
-
+#---------------------------------------------------------------------------
 # Cell 5: Improved chord identification from intervals
 def identify_chord_from_intervals(intervals):
     """
@@ -328,7 +328,7 @@ def get_interval_name(interval):
     }
     return interval_names.get(interval, f"Int{interval}")
 
-
+#---------------------------------------------------------------------------
 # Cell 6: Enhanced visualization of time windows with RAW WEIGHTS
 # Replace your existing analyze_time_windows function with this modified version
 def analyze_time_windows(notes, start_bar, beats_per_bar=4, min_chord_duration=0.5):
@@ -675,7 +675,7 @@ def analyze_time_windows(notes, start_bar, beats_per_bar=4, min_chord_duration=0
     
     # Return the list of chord windows
     return chord_windows
-
+#---------------------------------------------------------------------------
 # Cell 7: Function to analyze a progression with time windows
 def analyze_progression_with_time_windows(notes, start_bar, num_bars=4, beats_per_bar=4):
     """
@@ -729,7 +729,7 @@ if not os.path.exists(harmony_midi_path):
         print(f"Using alternative harmony MIDI path: {harmony_midi_path}")
     else:
         print(f"Warning: Could not find harmony MIDI file at expected locations")
-
+#---------------------------------------------------------------------------
 def identify_precise_chord(intervals):
     """
     Identify a SINGLE, PRECISE chord type based on strict interval matching
@@ -777,7 +777,7 @@ def identify_precise_chord(intervals):
     
     # If no match found, return an empty string
     return ""
-
+#---------------------------------------------------------------------------
 def identify_precise_chord(intervals):
     """
     Identify a SINGLE, PRECISE chord type based on strict interval matching
