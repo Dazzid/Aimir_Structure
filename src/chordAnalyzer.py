@@ -1405,9 +1405,10 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
     plt.subplots_adjust(hspace=0.4, bottom=0.1, top=0.92)
     
     # Save as vector graphic for paper
-    plt.savefig('chord_progression.pdf', bbox_inches='tight')
-    plt.savefig('chord_progression.svg', bbox_inches='tight')
-    plt.savefig('chord_progression.png', dpi=300, bbox_inches='tight')
+    filePath = "Figures/chord_progression"
+    plt.savefig(f"{filePath}.pdf", bbox_inches='tight')
+    #plt.savefig(f"{filePath}.svg", bbox_inches='tight')
+    #plt.savefig(f"{filePath}.png", dpi=300, bbox_inches='tight')
     
     # Show the plot
     plt.show()
