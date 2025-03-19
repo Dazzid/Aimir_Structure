@@ -932,18 +932,18 @@ def analyze_progression_with_unique_chords(notes, start_bar, num_bars=4, beats_p
 
 #---------------------------------------------------------------------------
 # Extract all chords from the entire piece automatically
-def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16, verbose=False):
+def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16, verbose=False, plot=True):
     """
-    Extract ALL chords from the entire piece automatically and display in a multi-row timeline
+    Extract ALL chords from the entire piece automatically using the superior chord identification from identify_unique_chord
     
     Args:
         notes: Combined notes from bass and harmony
         beats_per_bar: Beats per bar
         min_chord_duration: Minimum duration for chord identification
         bars_per_row: Number of bars to display in each row of the visualization
+        verbose: If True, return full chord data; if False, return summary string
+        plot: If True, plot the multi-row timeline; if False, skip plotting
     """
-    # [Keep the existing code until the plotting section]
-    
     # Temporarily disable all print statements
     import sys
     original_stdout = sys.stdout
@@ -959,7 +959,7 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
     try:
         # Determine the total length of the song automatically
         if not notes:
-            return []
+            return [] if verbose else "No notes found"
             
         # Find the last note's end time
         last_note_end = max(note['end'] for note in notes)
@@ -1031,45 +1031,50 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
                 
                 # Calculate duration for each interval
                 interval_durations = {}
+                interval_notes = {}
                 for interval in range(12):
                     # Root (interval 0) gets duration of bass note
                     if interval == 0:
                         interval_durations[interval] = window_end - window_start
+                        interval_notes[interval] = [bass_note['name']]
                         continue
                     
                     # Other intervals get sum of harmony note durations
                     matching_notes = [n for n in active_harmony if n['interval'] == interval]
                     if matching_notes:
                         interval_durations[interval] = sum(n['duration'] for n in matching_notes)
+                        interval_notes[interval] = sorted(set(n['name'] for n in matching_notes))
                 
-                # Calculate normalized weights
-                total_duration = window_end - window_start
-                interval_weights = {i: d/total_duration for i, d in interval_durations.items()}
+                # Calculate normalized weights for intervals
+                total_duration = sum(interval_durations.values())
+                normalized_weights = {
+                    interval: duration / total_duration 
+                    for interval, duration in interval_durations.items()
+                }
                 
-                # Determine significant intervals
-                threshold = 0.25
-                significant_intervals = sorted([
-                    i for i, w in interval_weights.items() if w >= threshold or i == 0
-                ])
+                # Create window result in format needed for identify_unique_chord
+                window_result = {
+                    'intervals': [i for i in range(12) if i in interval_durations],
+                    'interval_durations': interval_durations,
+                    'root_name': bass_note['name']
+                }
                 
-                # Special consideration for chord tones
-                for special_interval in [3, 4, 7, 10, 11]:
-                    if special_interval in interval_durations and special_interval not in significant_intervals:
-                        if interval_weights[special_interval] >= 0.15:
-                            significant_intervals.append(special_interval)
-                            significant_intervals.sort()
+                # Use the identify_unique_chord function directly to get refined chord type
+                refined_results = identify_unique_chord([window_result])
+                refined_chord_type = refined_results[0]['refined_chord_type']
+                chord_name = f"{fix_note_name(bass_note['name'])}{refined_chord_type}"
                 
-                # Identify chord
-                chord_type = identify_chord_from_intervals(significant_intervals)
-                chord_name = f"{fix_note_name(bass_note['name'])}{chord_type}"
+                # Calculate significant intervals for reference (could use from normalized_weights)
+                significant_intervals = [i for i, w in normalized_weights.items() 
+                                        if w >= 0.15 or i == 0]
                 
-                # Store chord
+                # Store chord with refined type
                 all_chords.append({
                     'bar': bar_idx + 1,
                     'beat_start': window_start,
                     'beat_end': window_end,
                     'root': bass_note['name'],
-                    'chord_type': chord_type,
+                    'chord_type': refined_chord_type,
                     'chord_name': chord_name,
                     'intervals': significant_intervals
                 })
@@ -1079,13 +1084,16 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
         sys.stdout = original_stdout
         plt.show = original_plt_show
     
-    # NOW PLOT THE MULTI-ROW TIMELINE instead of the original one
-    plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
+    # Plot the multi-row timeline only if requested
+    if plot:
+        plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
     
-    if verbose:
-        return all_chords
-    else:
+    # Return only a summary string if not verbose
+    if not verbose:
         return f"Extracted {len(all_chords)} chords across {total_bars} bars"
+    
+    # Otherwise return the full chord data
+    return all_chords
 
 def plot_chord_timeline(chords, total_bars, beats_per_bar=4):
     """
