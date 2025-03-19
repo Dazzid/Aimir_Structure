@@ -6,7 +6,7 @@ from music21 import converter, chord, note, stream, pitch
 from collections import Counter
 import os
 
-
+#---------------------------------------------------------------------------
 CHORD_COLORS = {
     # Basic triads
     "": "#fcc203",       # Major (blue)
@@ -34,6 +34,7 @@ CHORD_COLORS = {
     "default": "#d4d4d4" # Other chord types (light gray)
 }
 
+#---------------------------------------------------------------------------
 # Cell 2: Define chord structures with their characteristic intervals
 CHORD_TYPES = {
     # Basic triads
@@ -159,6 +160,7 @@ def load_midi_notes(midi_path, source_name="unknown"):
     except Exception as e:
         print(f"Error loading MIDI file {midi_path}: {e}")
         return []
+    
 #---------------------------------------------------------------------------
 # Cell 4: Function to visualize notes in a bar with enhanced display
 def visualize_notes_in_bars(notes, num_bars=1, beats_per_bar=4, start_bar=0):
@@ -194,20 +196,20 @@ def visualize_notes_in_bars(notes, num_bars=1, beats_per_bar=4, start_bar=0):
             note_data['pitch'], 
             end - start, 
             left=start, 
-            height=0.8, 
+            height=0.5, 
             color=color, 
             alpha=alpha
         )
-        
-        # Add note name for longer notes
-        if end - start > 0.5:
-            plt.text(
-                start + 0.1, 
-                note_data['pitch'] + 0.3, 
-                note_data['name'], 
-                fontsize=8,
-                color='white' if alpha > 0.6 else 'black'
-            )
+
+        # Add note name               
+        plt.text(
+            start, 
+            note_data['pitch']+0.5, 
+            note_data['name'], 
+            fontsize=8,
+            color='black',
+            bbox=dict(facecolor='white', alpha=0.5, pad=0, edgecolor="white")
+        )
     
     # Add bar lines
     for bar in range(start_bar, start_bar + num_bars + 1):
@@ -243,6 +245,7 @@ def visualize_notes_in_bars(notes, num_bars=1, beats_per_bar=4, start_bar=0):
     plt.tight_layout()
     plt.show()
     
+#---------------------------------------------------------------------------    
 # Add or check that this function is defined before it's used in analyze_time_windows
 def get_interval_name(interval):
     """Get a readable name for an interval number"""
@@ -582,7 +585,7 @@ def analyze_time_windows(notes, start_bar, beats_per_bar=4, min_chord_duration=0
         
         # Calculate normalized weights for intervals
         total_duration = window_end - window_start  # Use window duration as denominator
-        interval_weights = {i: d/total_duration for i, d in interval_durations.items()}
+        interval_weights = {i: d for i, d in interval_durations.items()}
         
         # Determine threshold for including intervals - intervals present for at least 25% of window
         threshold = 0.25
@@ -730,7 +733,7 @@ def analyze_time_windows(notes, start_bar, beats_per_bar=4, min_chord_duration=0
                     ha='center', 
                     va='bottom',
                     fontsize=8,
-                    rotation=45
+                    rotation=0
                 )
         
         plt.tight_layout()
@@ -810,54 +813,6 @@ if not os.path.exists(harmony_midi_path):
         print(f"Using alternative harmony MIDI path: {harmony_midi_path}")
     else:
         print(f"Warning: Could not find harmony MIDI file at expected locations")
-#---------------------------------------------------------------------------
-def identify_precise_chord(intervals):
-    """
-    Identify a SINGLE, PRECISE chord type based on strict interval matching
-    
-    Args:
-        intervals (list): List of interval classes present
-    
-    Returns:
-        str: A single, unambiguous chord type or empty string
-    """
-    # Prioritize most specific chord types first
-    chord_hierarchy = [
-        # Extended and altered chords (most specific)
-        ("dim7", [0, 3, 6, 9]),     # Fully diminished seventh
-        ("m7b5", [0, 3, 6, 10]),    # Half-diminished seventh
-        ("7b9", [0, 4, 7, 10, 1]),  # Dominant seventh flat ninth
-        ("7#9", [0, 4, 7, 10, 3]),  # Dominant seventh sharp ninth
-        ("9", [0, 4, 7, 10, 2]),    # Dominant ninth
-        ("m9", [0, 3, 7, 10, 2]),   # Minor ninth
-        ("maj9", [0, 4, 7, 11, 2]), # Major ninth
-        
-        # Seventh chords
-        ("dim", [0, 3, 6]),         # Diminished triad
-        ("m7", [0, 3, 7, 10]),      # Minor seventh
-        ("7", [0, 4, 7, 10]),       # Dominant seventh
-        ("maj7", [0, 4, 7, 11]),    # Major seventh
-        
-        # Suspended chords
-        ("7sus4", [0, 5, 7, 10]),   # Dominant seventh suspended
-        ("sus4", [0, 5, 7]),        # Suspended fourth
-        
-        # Basic triads
-        ("aug", [0, 4, 8]),         # Augmented triad
-        ("m", [0, 3, 7]),           # Minor triad
-        ("", [0, 4, 7])             # Major triad
-    ]
-    
-    # Convert intervals to a set for efficient checking
-    interval_set = set(intervals)
-    
-    # Find the first chord type that matches all its required intervals
-    for chord_type, required_intervals in chord_hierarchy:
-        if all(interval in interval_set for interval in required_intervals):
-            return chord_type
-    
-    # If no match found, return an empty string
-    return ""
 
 #---------------------------------------------------------------------------
 # Chord Identification Refinement Notebook
@@ -975,9 +930,8 @@ def analyze_progression_with_unique_chords(notes, start_bar, num_bars=4, beats_p
     
     return refined_results
 
-# Add this function after all your existing functions,
-# right before/after the "Load notes from the MIDI files" section
-
+#---------------------------------------------------------------------------
+# Extract all chords from the entire piece automatically
 def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16):
     """
     Extract ALL chords from the entire piece automatically and display in a multi-row timeline
@@ -1413,4 +1367,4 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
     # Show the plot
     plt.show()
     
-    print(f"Visualization saved as: chord_progression.pdf, chord_progression.svg, and chord_progression.png")
+    print(f"Visualization saved as: chord_progression.pdf")
