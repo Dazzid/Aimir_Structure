@@ -932,7 +932,7 @@ def analyze_progression_with_unique_chords(notes, start_bar, num_bars=4, beats_p
 
 #---------------------------------------------------------------------------
 # Extract all chords from the entire piece automatically
-def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16):
+def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16, verbose=False):
     """
     Extract ALL chords from the entire piece automatically and display in a multi-row timeline
     
@@ -1079,13 +1079,13 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
         sys.stdout = original_stdout
         plt.show = original_plt_show
     
-    # Print only the total number of chords found
-    print(f"Extracted {len(all_chords)} chords across {total_bars} bars")
-    
     # NOW PLOT THE MULTI-ROW TIMELINE instead of the original one
     plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
     
-    return all_chords
+    if verbose:
+        return all_chords
+    else:
+        return f"Extracted {len(all_chords)} chords across {total_bars} bars"
 
 def plot_chord_timeline(chords, total_bars, beats_per_bar=4):
     """
@@ -1242,7 +1242,7 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
                      if c['beat_end'] > start_beat and c['beat_start'] < end_beat]
         
         # Debug info
-        print(f"Row {row+1}: Bars {start_bar+1}-{end_bar}, Beats {start_beat}-{end_beat}, Chords: {len(row_chords)}")
+        # print(f"Row {row+1}: Bars {start_bar+1}-{end_bar}, Beats {start_beat}-{end_beat}, Chords: {len(row_chords)}")
         
         # Draw the chords for this row
         for chord in row_chords:
