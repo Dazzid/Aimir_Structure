@@ -817,78 +817,7 @@ if not os.path.exists(harmony_midi_path):
 #---------------------------------------------------------------------------
 # Chord Identification Refinement Notebook
 
-def identify_unique_chord(time_window_results):
-    """
-    Refine chord identification to ensure one unique chord per root
-    
-    Args:
-        time_window_results (list): Results from time window analysis
-    
-    Returns:
-        list: Refined chord identification results
-    """
-    refined_results = []
-    
-    for window in time_window_results:
-        # Extract key information
-        intervals = window['intervals']
-        interval_durations = window['interval_durations']
-        
-        # Calculate normalized weights for intervals
-        total_duration = sum(interval_durations.values())
-        normalized_weights = {
-            interval: duration / total_duration 
-            for interval, duration in interval_durations.items()
-        }
-        
-        # Define weight thresholds for chord qualities
-        def classify_chord_by_weights(normalized_weights):
-            """
-            Classify chord based on normalized interval weights
-            """
-            # Key interval thresholds
-            third_intervals = {3: 'm', 4: ''}  # minor or major third
-            fifth_intervals = {6: 'dim', 7: '', 8: 'aug'}  # diminished, perfect, augmented
-            seventh_intervals = {10: '7', 11: 'maj7'}  # minor or major seventh
-            ninth_intervals = {1: 'b9', 2: '9'}  # flat or natural ninth
-            
-            # Find most significant intervals for each category
-            max_third = max((normalized_weights.get(i, 0), i) for i in third_intervals.keys())[1]
-            max_fifth = max((normalized_weights.get(i, 0), i) for i in fifth_intervals.keys())[1]
-            
-            # Optional seventh and ninth
-            # Handle seventh and ninth intervals more explicitly
-            seventh_weights = [(normalized_weights.get(i, 0), i) for i in seventh_intervals.keys()]
-            ninth_weights = [(normalized_weights.get(i, 0), i) for i in ninth_intervals.keys()]
-            
-            max_seventh = max(seventh_weights, key=lambda x: x[0], default=(0, None))[1] if seventh_weights else None
-            max_ninth = max(ninth_weights, key=lambda x: x[0], default=(0, None))[1] if ninth_weights else None
-            
-            # Construct chord type
-            chord_type = third_intervals.get(max_third, '')
-            chord_type += fifth_intervals.get(max_fifth, '')
-            
-            # Add seventh if significant
-            if max_seventh:
-                chord_type += seventh_intervals.get(max_seventh, '')
-            
-            # Add ninth if significant
-            if max_ninth and normalized_weights.get(max_ninth, 0) > 0.1:  # 10% threshold
-                chord_type += ninth_intervals.get(max_ninth, '')
-            
-            return chord_type
-        
-        # Get the unique chord type
-        chord_type = classify_chord_by_weights(normalized_weights)
-        
-        # Update the window result
-        updated_window = window.copy()
-        updated_window['refined_chord_type'] = chord_type
-        updated_window['normalized_weights'] = normalized_weights
-        
-        refined_results.append(updated_window)
-    
-    return refined_results
+
 
 #---------------------------------------------------------------------------
 # Example usage in the notebook
@@ -930,11 +859,442 @@ def analyze_progression_with_unique_chords(notes, start_bar, num_bars=4, beats_p
     
     return refined_results
 
-#---------------------------------------------------------------------------
-# Extract all chords from the entire piece automatically
-def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16, verbose=False, plot=True):
+#---------------------------------------------------------------------------------------
+def classify_chord_by_weights(normalized_weights, root_pc=None):
     """
-    Extract ALL chords from the entire piece automatically using the superior chord identification from identify_unique_chord
+    Classify chord based on normalized interval weights with jazz-standard naming conventions
+    
+    Args:
+        normalized_weights: Dictionary mapping intervals to their normalized weights
+        root_pc: Pitch class of the root (optional, for additional context)
+        
+    Returns:
+        Chord type string
+    """
+    # Key interval thresholds
+    third_intervals = {3: 'm', 4: ''}  # minor or major third
+    fifth_intervals = {6: 'b5', 7: '', 8: '#5'}  # diminished, perfect, augmented
+    seventh_intervals = {10: '7', 11: 'maj7'}  # minor or major seventh
+    ninth_intervals = {1: 'b9', 2: '9'}  # flat or natural ninth
+    
+    # Find most significant intervals for each category
+    max_third = max([(normalized_weights.get(i, 0), i) for i in third_intervals.keys()], 
+                   key=lambda x: x[0], default=(0, None))[1]
+    
+    max_fifth = max([(normalized_weights.get(i, 0), i) for i in fifth_intervals.keys()], 
+                   key=lambda x: x[0], default=(0, None))[1]
+    
+    # Handle seventh and ninth intervals more explicitly
+    seventh_weights = [(normalized_weights.get(i, 0), i) for i in seventh_intervals.keys()]
+    ninth_weights = [(normalized_weights.get(i, 0), i) for i in ninth_intervals.keys()]
+    
+    max_seventh = max(seventh_weights, key=lambda x: x[0], default=(0, None))[1] if seventh_weights else None
+    max_ninth = max(ninth_weights, key=lambda x: x[0], default=(0, None))[1] if ninth_weights else None
+    
+    # Check for dominant context (presence of b7)
+    is_dominant = max_seventh == 10 and normalized_weights.get(10, 0) >= 0.15
+    
+    # Check for maj7 context
+    is_maj7 = max_seventh == 11 and normalized_weights.get(11, 0) >= 0.15
+    
+    # Check for suspended context (presence of 4th/11th without 3rd)
+    has_fourth = normalized_weights.get(5, 0) >= 0.15
+    no_third = (normalized_weights.get(3, 0) < 0.1 and normalized_weights.get(4, 0) < 0.1)
+    is_sus = has_fourth and no_third
+    
+    # Special case for diminished chords
+    if max_third == 3 and max_fifth == 6 and normalized_weights.get(3, 0) > 0.15 and normalized_weights.get(6, 0) > 0.15:
+        if normalized_weights.get(9, 0) > 0.15:
+            return "dim7"
+        elif normalized_weights.get(10, 0) > 0.15:
+            return "m7b5"
+        return "dim"
+    
+    # Special case for pure augmented triad (only root, major 3rd, #5)
+    if (max_third == 4 and max_fifth == 8 and 
+        normalized_weights.get(4, 0) > 0.15 and normalized_weights.get(8, 0) > 0.15):
+        # Check if it's a pure augmented triad (no 7th)
+        no_sevenths = (normalized_weights.get(10, 0) < 0.1 and normalized_weights.get(11, 0) < 0.1)
+        only_core_tones = sum(1 for i, w in normalized_weights.items() if i != 0 and i != 4 and i != 8 and w >= 0.15) == 0
+        
+        if no_sevenths and only_core_tones:
+            return "aug"  # Pure augmented triad
+    
+    # Handle suspended chords (sus4)
+    if is_sus:
+        if is_dominant:  # with dominant 7th
+            return "7sus4"
+        else:
+            return "sus4"
+    
+    # Handle special case where 9th appears with dominant 7th, but it's actually a sus chord
+    if is_dominant and max_ninth == 2 and normalized_weights.get(2, 0) > 0.2:
+        # Check if there's no clear third
+        if (normalized_weights.get(3, 0) < 0.1 and normalized_weights.get(4, 0) < 0.1):
+            return "7sus"  # This is actually a suspended dominant
+    
+    # Construct chord type
+    chord_type = ""
+    
+    # Add third quality if not suspended
+    if not is_sus and max_third and normalized_weights.get(max_third, 0) > 0.15:
+        chord_type = third_intervals.get(max_third, '')
+    
+    # Add seventh if significant
+    if max_seventh and normalized_weights.get(max_seventh, 0) > 0.15:
+        chord_type += seventh_intervals.get(max_seventh, '')
+    
+    # Handle altered dominant chords with b5 - should be #11
+    if is_dominant and max_fifth == 6 and normalized_weights.get(6, 0) > 0.15:
+        # DOM7 + b5 = DOM7#11 (jazz convention)
+        if not chord_type.startswith('m'):
+            chord_type += "#11"  # Add explicitly rather than replace
+    
+    # Handle altered fifth in other contexts
+    elif max_fifth == 6 and normalized_weights.get(6, 0) > 0.15:
+        if "7" in chord_type:
+            # For seventh chords with b5
+            if chord_type.startswith("m"):
+                if "7" in chord_type:
+                    return "m7b5"  # Minor 7 flat 5
+            else:
+                chord_type += "b5"  # for other contexts
+        elif not chord_type.startswith("m"):
+            chord_type += "b5"  # e.g., b5 triad
+    
+    # Handle augmented fifth (#5) in different contexts - ALWAYS show b13 for dominant context
+    if max_fifth == 8 and normalized_weights.get(8, 0) > 0.15:
+        if is_dominant:
+            # In dominant context, ALWAYS use altered dominant notation
+            # Check for b9 presence
+            has_b9 = (max_ninth == 1 and normalized_weights.get(1, 0) > 0.15)
+            
+            if has_b9:
+                return chord_type + "alt"  # 7alt notation includes b9 and #5
+            else:
+                return chord_type + "b13"  # ALWAYS use b13 instead of #5 for dom7
+        elif is_maj7:
+            # For maj7 with #5, include the b13 explicitly
+            return chord_type + "b13"
+    
+    # Add ninth if significant and not handled by sus cases
+    if max_ninth and normalized_weights.get(max_ninth, 0) > 0.1 and not is_sus:
+        chord_type += ninth_intervals.get(max_ninth, '')
+    
+    # Handle power chords
+    if chord_type == "" and max_fifth == 7 and normalized_weights.get(7, 0) > 0.15:
+        return "5"
+        
+    return chord_type
+
+
+def validate_chord_type(chord_type):
+    """
+    Validate chord type against music theory to prevent invalid combinations
+    and fix ordering to follow standard conventions
+    
+    Args:
+        chord_type: Chord type string from classification
+        
+    Returns:
+        Validated chord type string
+    """
+    # List of valid chord types
+    valid_types = [
+        "", "m", "dim", "aug",  # Triads
+        "7", "maj7", "m7", "dim7", "m7b5", "7b5", "7#11", "7alt", "7b13", # Sevenths
+        "9", "maj9", "m9", "7b9", "7#9", "7#11", # Extended
+        "sus4", "7sus4", "7sus", "sus", "5" # Suspended and power
+    ]
+    
+    # Direct match to valid types
+    if chord_type in valid_types:
+        return chord_type
+        
+    # Fix D79 to 7sus
+    if chord_type == "79" or chord_type == "7+9" or chord_type == "9sus":
+        return "7sus"
+    
+    # Fix ordering of altered fifths in dominant chords
+    if "b5" in chord_type and "7" in chord_type:
+        # Make sure b5 comes after 7 (e.g., G#b57 -> G#7b5)
+        if chord_type.find("b5") < chord_type.find("7"):
+            parts = []
+            if chord_type.startswith("m") and chord_type != "maj7":
+                parts.append("m")
+            parts.append("7")
+            parts.append("b5")
+            return "".join(parts)
+    
+    # Fix 7#11 ordering
+    if "#11" in chord_type and "7" in chord_type:
+        if chord_type.find("#11") < chord_type.find("7"):
+            parts = []
+            if chord_type.startswith("m") and chord_type != "maj7":
+                parts.append("m")
+            parts.append("7")
+            parts.append("#11")
+            return "".join(parts)
+    
+    # Fix 7b13 ordering
+    if "b13" in chord_type and "7" in chord_type:
+        if chord_type.find("b13") < chord_type.find("7"):
+            parts = []
+            if chord_type.startswith("m") and chord_type != "maj7":
+                parts.append("m")
+            parts.append("7")
+            parts.append("b13")
+            return "".join(parts)
+    
+    # Cannot have both minor and augmented
+    if "m" in chord_type and "aug" in chord_type:
+        # Choose based on which appears first (priority)
+        if chord_type.find("m") < chord_type.find("aug"):
+            return chord_type.replace("aug", "")
+        else:
+            return chord_type.replace("m", "")
+    
+    # Cannot have both diminished and augmented
+    if "dim" in chord_type and "aug" in chord_type:
+        return chord_type.replace("aug", "")
+    
+    # Fix ordering issues (e.g., "maj7m" should be "mmaj7")
+    if "maj7" in chord_type and "m" in chord_type and chord_type.find("maj7") < chord_type.find("m"):
+        return "m" + chord_type.replace("m", "")
+    
+    # Some specific replacements for common invalid combinations
+    replacements = {
+        "mdim": "dim",    # Minor diminished is just diminished
+        "maug": "aug",    # Minor augmented doesn't exist
+        "dimm": "dim",    # Diminished minor is just diminished
+        "augm": "aug",    # Augmented minor doesn't exist
+        "7#5": "7b13",    # Dominant with #5 should be 7b13 in jazz notation
+        "79sus": "7sus",  # Dom7 with 9 and sus is just 7sus
+        "9 ": "7sus"      # Dom9 without 3rd is 7sus
+    }
+    
+    # Apply replacements
+    for bad, good in replacements.items():
+        if bad in chord_type:
+            chord_type = chord_type.replace(bad, good)
+    
+    return chord_type
+#---------------------------------------------------------------------------------------
+def identify_unique_chord(time_window_results):
+    """
+    Refine chord identification using weighted interval analysis
+    
+    Args:
+        time_window_results (list): Results from time window analysis
+    
+    Returns:
+        list: Refined chord identification results
+    """
+    refined_results = []
+    
+    for window in time_window_results:
+        # Extract key information
+        intervals = window['intervals']
+        interval_durations = window['interval_durations']
+        
+        # Calculate normalized weights for intervals
+        total_duration = sum(interval_durations.values())
+        normalized_weights = {
+            interval: duration / total_duration 
+            for interval, duration in interval_durations.items()
+        }
+        
+        # Get the unique chord type using the improved method
+        chord_type = classify_chord_by_weights(normalized_weights)
+        
+        # Validate the chord type against music theory
+        chord_type = validate_chord_type(chord_type)
+        
+        # Update the window result
+        updated_window = window.copy()
+        updated_window['refined_chord_type'] = chord_type
+        updated_window['normalized_weights'] = normalized_weights
+        
+        refined_results.append(updated_window)
+    
+    return refined_results
+
+#---------------------------------------------------------------------------------------
+def extract_harmony_only_chords(harmony_notes, start_beat, end_beat, beats_per_bar, bar_idx):
+    """
+    Extract chords from harmony notes when bass notes are not available
+    
+    Args:
+        harmony_notes: List of harmony notes in the current bar
+        start_beat: Start beat of the bar
+        end_beat: End beat of the bar
+        beats_per_bar: Number of beats per bar
+        bar_idx: Current bar index
+        
+    Returns:
+        List of chord dictionaries
+    """
+    if not harmony_notes:
+        return []
+    
+    # Divide the bar into equal windows (half-bar divisions by default)
+    window_size = beats_per_bar / 2
+    harmony_windows = []
+    
+    # Create windows
+    for window_start in np.arange(start_beat, end_beat, window_size):
+        window_end = min(window_start + window_size, end_beat)
+        
+        # Find notes active in this window
+        active_notes = []
+        for hn in harmony_notes:
+            if hn['start'] < window_end and hn['end'] > window_start:
+                overlap_start = max(window_start, hn['start'])
+                overlap_end = min(window_end, hn['end'])
+                overlap_duration = overlap_end - overlap_start
+                
+                active_notes.append({
+                    'name': hn['name'],
+                    'pitch': hn['pitch'],  # Include MIDI pitch for finding lowest notes
+                    'pitch_class': hn['pitch_class'], 
+                    'duration': overlap_duration,
+                    'start': hn['start'],  # Keep original start time for beat position analysis
+                    'end': hn['end']       # Keep original end time
+                })
+        
+        if active_notes:
+            harmony_windows.append({
+                'start': window_start,
+                'end': window_end,
+                'notes': active_notes
+            })
+    
+    # Extract chords from each window
+    window_chords = []
+    
+    for window in harmony_windows:
+        if not window['notes']:
+            continue
+            
+        # Find the lowest notes (potentially bass function)
+        # Sort by pitch (ascending)
+        sorted_by_pitch = sorted(window['notes'], key=lambda x: x['pitch'])
+        
+        # Take the lowest 2-3 notes that have significant duration
+        lowest_notes = []
+        for note in sorted_by_pitch:
+            if note['duration'] >= 0.25 * window_size:  # At least 25% of window duration
+                lowest_notes.append(note)
+                if len(lowest_notes) >= 3:  # Take up to 3 lowest notes
+                    break
+        
+        # If we don't have significant lowest notes, take the 2 absolute lowest
+        if not lowest_notes:
+            lowest_notes = sorted_by_pitch[:2] if len(sorted_by_pitch) >= 2 else sorted_by_pitch
+        
+        # Calculate note durations by pitch class for all notes
+        pc_durations = {}
+        pc_to_name = {}  # Map pitch class to note name
+        pc_to_lowest_pitch = {}  # Map pitch class to its lowest occurrence
+        
+        for note in window['notes']:
+            pc = note['pitch_class']
+            if pc not in pc_durations:
+                pc_durations[pc] = 0
+                pc_to_name[pc] = note['name']
+                pc_to_lowest_pitch[pc] = note['pitch']
+            else:
+                # Keep track of the lowest occurrence of each pitch class
+                if note['pitch'] < pc_to_lowest_pitch[pc]:
+                    pc_to_lowest_pitch[pc] = note['pitch']
+            
+            pc_durations[pc] += note['duration']
+        
+        # Determine likely root using a weighted approach:
+        # 1. Heavily favor lowest notes (potential bass function)
+        # 2. Factor in duration/prominence
+        
+        # First, create a list of candidate roots
+        root_candidates = []
+        
+        # The pitch classes of the lowest notes become candidates
+        for note in lowest_notes:
+            pc = note['pitch_class']
+            # Calculate a root score: combine bass position and duration
+            # Lower pitch = higher score, longer duration = higher score
+            lowest_pitch_for_pc = pc_to_lowest_pitch[pc]
+            position_score = 120 - lowest_pitch_for_pc  # Lower pitches get higher scores (increased weight)
+            duration_score = pc_durations[pc]
+            
+            # Prioritize strong beats (first and third beat in 4/4 time)
+            beat_score = 0
+            if 'start' in note:
+                beat_in_bar = note['start'] % beats_per_bar
+                if beat_in_bar < 0.5 or (beat_in_bar >= 2 and beat_in_bar < 2.5):
+                    beat_score = 10  # Bonus for strong beats
+            
+            # Total score with position (bass function) weighted heaviest
+            total_score = position_score * 4 + duration_score * 2 + beat_score  # Increased bass weighting
+            
+            root_candidates.append({
+                'pitch_class': pc,
+                'name': note['name'],
+                'score': total_score
+            })
+        
+        if not root_candidates:
+            continue
+            
+        # Sort candidates by score
+        root_candidates.sort(key=lambda x: x['score'], reverse=True)
+        
+        # Select the highest-scoring candidate
+        root_pc = root_candidates[0]['pitch_class']
+        root_name = root_candidates[0]['name']
+        
+        # Calculate intervals relative to the root
+        intervals = {}
+        for pc, duration in pc_durations.items():
+            interval = (pc - root_pc) % 12
+            intervals[interval] = duration
+        
+        # Always include the root interval
+        if 0 not in intervals:
+            intervals[0] = window['end'] - window['start']
+        
+        # Create a window result in format needed for identify_unique_chord
+        interval_durations = {i: intervals.get(i, 0) for i in range(12)}
+        
+        window_result = {
+            'intervals': list(intervals.keys()),
+            'interval_durations': interval_durations,
+            'root_name': root_name
+        }
+        
+        # Use the chord identification function to get the chord type
+        refined_results = identify_unique_chord([window_result])
+        refined_chord_type = refined_results[0]['refined_chord_type']
+        
+        chord_name = f"{fix_note_name(root_name)}{refined_chord_type}"
+        
+        # Store the chord
+        window_chords.append({
+            'bar': bar_idx + 1,
+            'beat_start': window['start'],
+            'beat_end': window['end'],
+            'root': root_name,
+            'chord_type': refined_chord_type,
+            'chord_name': chord_name,
+            'intervals': list(intervals.keys()),
+            'source': 'harmony-only'  # Mark as derived from harmony without bass
+        })
+    
+    return window_chords
+
+#---------------------------------------------------------------------------------------
+def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16, verbose=False, plot=True, analyze_harmony_only=True):
+    """
+    Extract ALL chords from the entire piece automatically with harmony-only analysis
     
     Args:
         notes: Combined notes from bass and harmony
@@ -943,6 +1303,7 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
         bars_per_row: Number of bars to display in each row of the visualization
         verbose: If True, return full chord data; if False, return summary string
         plot: If True, plot the multi-row timeline; if False, skip plotting
+        analyze_harmony_only: If True, analyze sections without bass notes using harmony information
     """
     # Temporarily disable all print statements
     import sys
@@ -987,102 +1348,113 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
             bass_notes = [n for n in bar_notes if n['source'] == 'bass']
             harmony_notes = [n for n in bar_notes if n['source'] == 'harmony']
             
-            # Skip if no bass notes
-            if not bass_notes:
-                continue
+            # Check if we have bass notes
+            if bass_notes:
+                # Process with normal bass-based chord extraction
+                # Sort bass notes by start time
+                bass_notes.sort(key=lambda x: x['start'])
                 
-            # Sort bass notes by start time
-            bass_notes.sort(key=lambda x: x['start'])
-            
-            # Filter out very short bass notes
-            significant_bass_notes = []
-            for bn in bass_notes:
-                duration = min(bn['end'], end_beat) - max(bn['start'], start_beat)
-                if duration >= min_chord_duration:
-                    significant_bass_notes.append(bn)
-            
-            # If no significant bass notes, use the longest one
-            if not significant_bass_notes and bass_notes:
-                longest_bass = max(bass_notes, 
-                                  key=lambda x: min(x['end'], end_beat) - max(x['start'], start_beat))
-                significant_bass_notes = [longest_bass]
-            
-            # Analyze each significant bass note
-            for bass_note in significant_bass_notes:
-                # Define precise time window
-                window_start = max(bass_note['start'], start_beat)
-                window_end = min(bass_note['end'], end_beat)
-                root_pc = bass_note['pitch_class']
+                # Filter out very short bass notes
+                significant_bass_notes = []
+                for bn in bass_notes:
+                    duration = min(bn['end'], end_beat) - max(bn['start'], start_beat)
+                    if duration >= min_chord_duration:
+                        significant_bass_notes.append(bn)
                 
-                # Find harmony notes active during this window
-                active_harmony = []
-                for hn in harmony_notes:
-                    if hn['start'] < window_end and hn['end'] > window_start:
-                        overlap_start = max(window_start, hn['start'])
-                        overlap_end = min(window_end, hn['end'])
-                        overlap_duration = overlap_end - overlap_start
-                        
-                        active_harmony.append({
-                            'name': hn['name'],
-                            'pitch_class': hn['pitch_class'],
-                            'duration': overlap_duration,
-                            'interval': (hn['pitch_class'] - root_pc) % 12
-                        })
+                # If no significant bass notes, use the longest one
+                if not significant_bass_notes and bass_notes:
+                    longest_bass = max(bass_notes, 
+                                      key=lambda x: min(x['end'], end_beat) - max(x['start'], start_beat))
+                    significant_bass_notes = [longest_bass]
                 
-                # Calculate duration for each interval
-                interval_durations = {}
-                interval_notes = {}
-                for interval in range(12):
-                    # Root (interval 0) gets duration of bass note
-                    if interval == 0:
-                        interval_durations[interval] = window_end - window_start
-                        interval_notes[interval] = [bass_note['name']]
-                        continue
+                # Analyze each significant bass note
+                for bass_note in significant_bass_notes:
+                    # Define precise time window
+                    window_start = max(bass_note['start'], start_beat)
+                    window_end = min(bass_note['end'], end_beat)
+                    root_pc = bass_note['pitch_class']
                     
-                    # Other intervals get sum of harmony note durations
-                    matching_notes = [n for n in active_harmony if n['interval'] == interval]
-                    if matching_notes:
-                        interval_durations[interval] = sum(n['duration'] for n in matching_notes)
-                        interval_notes[interval] = sorted(set(n['name'] for n in matching_notes))
-                
-                # Calculate normalized weights for intervals
-                total_duration = sum(interval_durations.values())
-                normalized_weights = {
-                    interval: duration / total_duration 
-                    for interval, duration in interval_durations.items()
-                }
-                
-                # Create window result in format needed for identify_unique_chord
-                window_result = {
-                    'intervals': [i for i in range(12) if i in interval_durations],
-                    'interval_durations': interval_durations,
-                    'root_name': bass_note['name']
-                }
-                
-                # Use the identify_unique_chord function directly to get refined chord type
-                refined_results = identify_unique_chord([window_result])
-                refined_chord_type = refined_results[0]['refined_chord_type']
-                chord_name = f"{fix_note_name(bass_note['name'])}{refined_chord_type}"
-                
-                # Calculate significant intervals for reference (could use from normalized_weights)
-                significant_intervals = [i for i, w in normalized_weights.items() 
-                                        if w >= 0.15 or i == 0]
-                
-                # Store chord with refined type
-                all_chords.append({
-                    'bar': bar_idx + 1,
-                    'beat_start': window_start,
-                    'beat_end': window_end,
-                    'root': bass_note['name'],
-                    'chord_type': refined_chord_type,
-                    'chord_name': chord_name,
-                    'intervals': significant_intervals
-                })
+                    # Find harmony notes active during this window
+                    active_harmony = []
+                    for hn in harmony_notes:
+                        if hn['start'] < window_end and hn['end'] > window_start:
+                            overlap_start = max(window_start, hn['start'])
+                            overlap_end = min(window_end, hn['end'])
+                            overlap_duration = overlap_end - overlap_start
+                            
+                            active_harmony.append({
+                                'name': hn['name'],
+                                'pitch_class': hn['pitch_class'],
+                                'duration': overlap_duration,
+                                'interval': (hn['pitch_class'] - root_pc) % 12
+                            })
+                    
+                    # Calculate duration for each interval
+                    interval_durations = {}
+                    interval_notes = {}
+                    for interval in range(12):
+                        # Root (interval 0) gets duration of bass note
+                        if interval == 0:
+                            interval_durations[interval] = window_end - window_start
+                            interval_notes[interval] = [bass_note['name']]
+                            continue
+                        
+                        # Other intervals get sum of harmony note durations
+                        matching_notes = [n for n in active_harmony if n['interval'] == interval]
+                        if matching_notes:
+                            interval_durations[interval] = sum(n['duration'] for n in matching_notes)
+                            interval_notes[interval] = sorted(set(n['name'] for n in matching_notes))
+                    
+                    # Calculate normalized weights for intervals
+                    total_duration = sum(interval_durations.values()) if interval_durations else 1
+                    normalized_weights = {
+                        interval: duration / total_duration 
+                        for interval, duration in interval_durations.items()
+                    }
+                    
+                    # Create window result in format needed for identify_unique_chord
+                    window_result = {
+                        'intervals': [i for i in range(12) if i in interval_durations],
+                        'interval_durations': interval_durations,
+                        'root_name': bass_note['name']
+                    }
+                    
+                    # Use the identify_unique_chord function to get refined chord type
+                    refined_results = identify_unique_chord([window_result])
+                    refined_chord_type = refined_results[0]['refined_chord_type']
+                    
+                    chord_name = f"{fix_note_name(bass_note['name'])}{refined_chord_type}"
+                    
+                    # Calculate significant intervals for reference
+                    significant_intervals = [i for i, w in normalized_weights.items() 
+                                            if w >= 0.15 or i == 0]
+                    
+                    # Store chord with refined type
+                    all_chords.append({
+                        'bar': bar_idx + 1,
+                        'beat_start': window_start,
+                        'beat_end': window_end,
+                        'root': bass_note['name'],
+                        'chord_type': refined_chord_type,
+                        'chord_name': chord_name,
+                        'intervals': significant_intervals,
+                        'source': 'bass'  # Mark as derived from bass notes
+                    })
+            
+            # Handle bars without bass but with harmony notes
+            elif analyze_harmony_only and harmony_notes:
+                harmony_chords = extract_harmony_only_chords(
+                    harmony_notes, start_beat, end_beat, beats_per_bar, bar_idx
+                )
+                all_chords.extend(harmony_chords)
                 
     finally:
         # Restore stdout and plt.show
         sys.stdout = original_stdout
         plt.show = original_plt_show
+    
+    # Sort chords by start time
+    all_chords.sort(key=lambda x: x['beat_start'])
     
     # Plot the multi-row timeline only if requested
     if plot:
@@ -1090,10 +1462,196 @@ def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=
     
     # Return only a summary string if not verbose
     if not verbose:
-        return f"Extracted {len(all_chords)} chords across {total_bars} bars"
+        bass_chords = sum(1 for c in all_chords if c.get('source') == 'bass')
+        harmony_chords = sum(1 for c in all_chords if c.get('source') == 'harmony-only')
+        return f"Extracted {len(all_chords)} chords across {total_bars} bars ({bass_chords} from bass, {harmony_chords} from harmony only)"
     
     # Otherwise return the full chord data
     return all_chords
+
+#---------------------------------------------------------------------------------------
+# Cell 5: Function to extract all chords automatically
+def extract_all_chords_automatically(notes, beats_per_bar=4, min_chord_duration=0.5, bars_per_row=16, verbose=False, plot=True, analyze_harmony_only=True):
+    """
+    Extract ALL chords from the entire piece automatically using the superior chord identification from identify_unique_chord
+    With enhanced capability to analyze sections without bass notes
+    
+    Args:
+        notes: Combined notes from bass and harmony
+        beats_per_bar: Beats per bar
+        min_chord_duration: Minimum duration for chord identification
+        bars_per_row: Number of bars to display in each row of the visualization
+        verbose: If True, return full chord data; if False, return summary string
+        plot: If True, plot the multi-row timeline; if False, skip plotting
+        analyze_harmony_only: If True, analyze sections without bass notes using harmony information
+    """
+    # Temporarily disable all print statements
+    import sys
+    original_stdout = sys.stdout
+    sys.stdout = open('/dev/null', 'w')
+    
+    # Temporarily disable all plotting
+    original_plt_show = plt.show
+    plt.show = lambda: None
+    
+    # Close all existing figures to prevent warnings
+    plt.close('all')
+    
+    try:
+        # Determine the total length of the song automatically
+        if not notes:
+            return [] if verbose else "No notes found"
+            
+        # Find the last note's end time
+        last_note_end = max(note['end'] for note in notes)
+        
+        # Calculate total number of bars (rounding up to include partial bars)
+        import math
+        total_bars = math.ceil(last_note_end / beats_per_bar)
+        
+        # Extract all chords from all bars
+        all_chords = []
+        
+        for bar_idx in range(total_bars):
+            # Calculate bar boundaries
+            start_beat = bar_idx * beats_per_bar
+            end_beat = (bar_idx + 1) * beats_per_bar
+            
+            # Get notes in this bar
+            bar_notes = [n for n in notes if n['end'] > start_beat and n['start'] < end_beat]
+            
+            # Skip empty bars
+            if not bar_notes:
+                continue
+                
+            # Separate bass and harmony
+            bass_notes = [n for n in bar_notes if n['source'] == 'bass']
+            harmony_notes = [n for n in bar_notes if n['source'] == 'harmony']
+            
+            # Check if we have bass notes
+            if bass_notes:
+                # Process with normal bass-based chord extraction
+                # Sort bass notes by start time
+                bass_notes.sort(key=lambda x: x['start'])
+                
+                # Filter out very short bass notes
+                significant_bass_notes = []
+                for bn in bass_notes:
+                    duration = min(bn['end'], end_beat) - max(bn['start'], start_beat)
+                    if duration >= min_chord_duration:
+                        significant_bass_notes.append(bn)
+                
+                # If no significant bass notes, use the longest one
+                if not significant_bass_notes and bass_notes:
+                    longest_bass = max(bass_notes, 
+                                      key=lambda x: min(x['end'], end_beat) - max(x['start'], start_beat))
+                    significant_bass_notes = [longest_bass]
+                
+                # Analyze each significant bass note
+                for bass_note in significant_bass_notes:
+                    # Define precise time window
+                    window_start = max(bass_note['start'], start_beat)
+                    window_end = min(bass_note['end'], end_beat)
+                    root_pc = bass_note['pitch_class']
+                    
+                    # Find harmony notes active during this window
+                    active_harmony = []
+                    for hn in harmony_notes:
+                        if hn['start'] < window_end and hn['end'] > window_start:
+                            overlap_start = max(window_start, hn['start'])
+                            overlap_end = min(window_end, hn['end'])
+                            overlap_duration = overlap_end - overlap_start
+                            
+                            active_harmony.append({
+                                'name': hn['name'],
+                                'pitch_class': hn['pitch_class'],
+                                'duration': overlap_duration,
+                                'interval': (hn['pitch_class'] - root_pc) % 12
+                            })
+                    
+                    # Calculate duration for each interval
+                    interval_durations = {}
+                    interval_notes = {}
+                    for interval in range(12):
+                        # Root (interval 0) gets duration of bass note
+                        if interval == 0:
+                            interval_durations[interval] = window_end - window_start
+                            interval_notes[interval] = [bass_note['name']]
+                            continue
+                        
+                        # Other intervals get sum of harmony note durations
+                        matching_notes = [n for n in active_harmony if n['interval'] == interval]
+                        if matching_notes:
+                            interval_durations[interval] = sum(n['duration'] for n in matching_notes)
+                            interval_notes[interval] = sorted(set(n['name'] for n in matching_notes))
+                    
+                    # Calculate normalized weights for intervals
+                    total_duration = sum(interval_durations.values()) if interval_durations else 1
+                    normalized_weights = {
+                        interval: duration / total_duration 
+                        for interval, duration in interval_durations.items()
+                    }
+                    
+                    # Create window result in format needed for identify_unique_chord
+                    window_result = {
+                        'intervals': [i for i in range(12) if i in interval_durations],
+                        'interval_durations': interval_durations,
+                        'root_name': bass_note['name']
+                    }
+                    
+                    # Use the identify_unique_chord function directly to get refined chord type
+                    refined_results = identify_unique_chord([window_result])
+                    refined_chord_type = refined_results[0]['refined_chord_type']
+                    
+                    # Also validate to prevent invalid chord names
+                    refined_chord_type = validate_chord_type(refined_chord_type)
+                    
+                    chord_name = f"{fix_note_name(bass_note['name'])}{refined_chord_type}"
+                    
+                    # Calculate significant intervals for reference
+                    significant_intervals = [i for i, w in normalized_weights.items() 
+                                            if w >= 0.15 or i == 0]
+                    
+                    # Store chord with refined type
+                    all_chords.append({
+                        'bar': bar_idx + 1,
+                        'beat_start': window_start,
+                        'beat_end': window_end,
+                        'root': bass_note['name'],
+                        'chord_type': refined_chord_type,
+                        'chord_name': chord_name,
+                        'intervals': significant_intervals,
+                        'source': 'bass'  # Mark as derived from bass notes
+                    })
+            
+            # Handle bars without bass but with harmony notes
+            elif analyze_harmony_only and harmony_notes:
+                harmony_chords = extract_harmony_only_chords(
+                    harmony_notes, start_beat, end_beat, beats_per_bar, bar_idx
+                )
+                all_chords.extend(harmony_chords)
+                
+    finally:
+        # Restore stdout and plt.show
+        sys.stdout = original_stdout
+        plt.show = original_plt_show
+    
+    # Sort chords by start time
+    all_chords.sort(key=lambda x: x['beat_start'])
+    
+    # Plot the multi-row timeline only if requested
+    if plot:
+        plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
+    
+    # Return only a summary string if not verbose
+    if not verbose:
+        bass_chords = sum(1 for c in all_chords if c.get('source') == 'bass')
+        harmony_chords = sum(1 for c in all_chords if c.get('source') == 'harmony-only')
+        return f"Extracted {len(all_chords)} chords across {total_bars} bars ({bass_chords} from bass, {harmony_chords} from harmony only)"
+    
+    # Otherwise return the full chord data
+    return all_chords
+
 
 def plot_chord_timeline(chords, total_bars, beats_per_bar=4):
     """
@@ -1188,10 +1746,9 @@ def plot_chord_timeline(chords, total_bars, beats_per_bar=4):
     plt.show()
     
 
-
-# 2. Create a custom text color function that selects an appropriate text color
+#---------------------------------------------------------------------------------------
+# Create a custom text color function that selects an appropriate text color
 # based on the background color brightness:
-
 def get_text_color(background_color):
     """
     Determine whether to use black or white text based on background color brightness
@@ -1213,6 +1770,8 @@ def get_text_color(background_color):
     # Use white text on dark backgrounds, black text on light backgrounds
     return 'white' if brightness < 0.5 else 'black'
 
+#---------------------------------------------------------------------------------------
+# Create a function to plot the chord timeline with multiple rows
 def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_row=16):
     """
     Plot a chord timeline with multiple rows for better readability in publications
@@ -1293,6 +1852,7 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
                 0.8, 
                 facecolor=color,
                 edgecolor='black',
+                linewidth=0.25,
                 alpha=0.7
             ))
             
@@ -1317,7 +1877,7 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
             bar_pos = (bar - start_bar) * beats_per_bar
             
             # Draw the bar line
-            ax.axvline(x=bar_pos, color='black', linestyle='-', alpha=0.5)
+            ax.axvline(x=bar_pos, color='black', linestyle='-', alpha=0.5, linewidth=0.5)
             
             # Add bar number (except for the end of row line)
             if bar < end_bar:
@@ -1348,15 +1908,15 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
     
     # Add a common legend at the bottom
     legend_handles = [
-        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS[''], alpha=0.7, edgecolor='black', label='Major'),
-        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m'], alpha=0.7, edgecolor='black', label='Minor'),
-        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['7'], alpha=0.7, edgecolor='black', label='Dominant 7th'),
-        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['maj7'], alpha=0.7, edgecolor='black', label='Major 7th'),
-        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m7'], alpha=0.7, edgecolor='black', label='Minor 7th'),
-        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['dim'], alpha=0.7, edgecolor='black', label='Diminished'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS[''],     alpha=0.7, edgecolor='black', linewidth=0.25, label='Major'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m'],    alpha=0.7, edgecolor='black', linewidth=0.25, label='Minor'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['7'],    alpha=0.7, edgecolor='black', linewidth=0.25, label='Dominant 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['maj7'], alpha=0.7, edgecolor='black', linewidth=0.25, label='Major 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['m7'],   alpha=0.7, edgecolor='black', linewidth=0.25, label='Minor 7th'),
+        plt.Rectangle((0, 0), 1, 1, facecolor=CHORD_COLORS['dim'],  alpha=0.7, edgecolor='black', linewidth=0.25, label='Diminished'),
         # Add more legend items as needed
     ]
-    fig.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.5, 0.03),
+    fig.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.5, 0.03), 
           ncol=4, frameon=False)
     
     # Add overall title
