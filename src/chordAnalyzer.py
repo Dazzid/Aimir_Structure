@@ -1881,7 +1881,7 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
             
             # Add bar number (except for the end of row line)
             if bar < end_bar:
-                ax.text(bar_pos + 0.1, 0.95, f"{bar+1}", fontsize=8)
+                ax.text(bar_pos + 0.1, 0.93, f"{bar+1}", fontsize=8)
         
         # Draw beat lines
         for beat in range(start_bar * beats_per_bar, end_bar * beats_per_bar + 1):
