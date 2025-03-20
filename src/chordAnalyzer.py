@@ -794,33 +794,6 @@ def analyze_progression_with_time_windows(notes, start_bar, num_bars=4, beats_pe
     
     return all_results
 
-# Cell 8: Load your MIDI files and combine the notes
-# Set the paths to your MIDI files - modify these as needed
-bass_midi_path = "/workspace/src/chord_analysis/bass_extracted.mid"
-harmony_midi_path = "/workspace/src/chord_analysis/harmony_extracted.mid"
-
-# Check if files exist, otherwise try alternative paths
-if not os.path.exists(bass_midi_path):
-    alternative_path = "/workspace/src/midi_files/bass.mid"
-    if os.path.exists(alternative_path):
-        bass_midi_path = alternative_path
-        print(f"Using alternative bass MIDI path: {bass_midi_path}")
-    else:
-        print(f"Warning: Could not find bass MIDI file at expected locations")
-
-if not os.path.exists(harmony_midi_path):
-    alternative_path = "/workspace/src/midi_files/harmony.mid"
-    if os.path.exists(alternative_path):
-        harmony_midi_path = alternative_path
-        print(f"Using alternative harmony MIDI path: {harmony_midi_path}")
-    else:
-        print(f"Warning: Could not find harmony MIDI file at expected locations")
-
-#---------------------------------------------------------------------------
-# Chord Identification Refinement Notebook
-
-
-
 #---------------------------------------------------------------------------
 # Example usage in the notebook
 def apply_unique_chord_identification(original_results):
@@ -886,8 +859,12 @@ def classify_chord_by_weights(normalized_weights, min_threshold = 0.1, root_pc=N
     max_fifth = max([(normalized_weights.get(i, 0), i) for i in fifth_intervals.keys()], 
                    key=lambda x: x[0], default=(0, None))[1]
     
-    max_seventh = max([(normalized_weights.get(i, 0), i) for i in seventh_intervals.keys()], 
-                     key=lambda x: x[0], default=(0, None))[1] if seventh_intervals else None
+    # weighted_sevenths = [(normalized_weights.get(i, 0) * 1.7 if i in (10, 11) else normalized_weights.get(i, 0), i)
+    #                  for i in seventh_intervals.keys()]
+    # max_seventh = max(weighted_sevenths, key=lambda x: x[0], default=(0, None))[1]
+    
+    max_seventh = max([(normalized_weights.get(i, 0), i) for i in seventh_intervals.keys()],
+                     key=lambda x: x[0], default=(0, None))[1]
     
     max_ninth = max([(normalized_weights.get(i, 0), i) for i in ninth_intervals.keys()],
                    key=lambda x: x[0], default=(0, None))[1] if ninth_intervals else None
@@ -998,27 +975,36 @@ def classify_chord_by_weights(normalized_weights, min_threshold = 0.1, root_pc=N
 #---------------------------------------------------------------------------
 def identify_unique_chord(time_window_results):
     """
-    Refine chord identification using weighted interval analysis
+    Refine chord identification using weighted interval analysis.
     
     Args:
-        time_window_results (list): Results from time window analysis
-    
+        time_window_results (list): Results from time window analysis.
+        
     Returns:
-        list: Refined chord identification results
+        list: Refined chord identification results with a 'confidence' value.
     """
     refined_results = []
     
     for window in time_window_results:
         # Extract key information
-        intervals = window['intervals']
-        interval_durations = window['interval_durations']
+        intervals = window.get('intervals', [])
+        interval_durations = window.get('interval_durations', {}).copy()
         
-        # Calculate normalized weights for intervals
+        # Ensure the root (interval 0) is always present with a nonzero duration.
+        # If not present, try to compute it using the window's start and end times.
+        if 0 not in interval_durations or interval_durations[0] == 0:
+            if 'start' in window and 'end' in window:
+                interval_durations[0] = window['end'] - window['start']
+            else:
+                interval_durations[0] = 1e-6  # Minimal fallback value
+        
+        # Calculate normalized weights for intervals.
         total_duration = sum(interval_durations.values())
-        normalized_weights = {
-            interval: duration / total_duration 
-            for interval, duration in interval_durations.items()
-        }
+        if total_duration == 0:
+            normalized_weights = {i: 0 for i in interval_durations}
+        else:
+            normalized_weights = {interval: duration / total_duration 
+                                  for interval, duration in interval_durations.items()}
         
         # Get the unique chord type using the improved method
         chord_type = classify_chord_by_weights(normalized_weights)
@@ -1026,14 +1012,28 @@ def identify_unique_chord(time_window_results):
         # Validate the chord type against music theory
         chord_type = validate_chord_type(chord_type)
         
-        # Update the window result
+        # Determine required intervals; if chord_type is not found, fallback to [0] (root only)
+        if chord_type in CHORD_TYPES:
+            required_intervals = CHORD_TYPES[chord_type]["required"]
+        else:
+            required_intervals = [0]
+        
+        # Debug: Uncomment the line below to inspect intermediate values.
+        # print(f"Chord Type: {chord_type}, Required: {required_intervals}, Normalized Weights: {normalized_weights}")
+        
+        # Compute confidence as the sum of normalized weights for the required intervals.
+        confidence = sum(normalized_weights.get(i, 0) for i in required_intervals)
+        
+        # Update the window result with refined chord type and confidence
         updated_window = window.copy()
         updated_window['refined_chord_type'] = chord_type
         updated_window['normalized_weights'] = normalized_weights
+        updated_window['confidence'] = confidence
         
         refined_results.append(updated_window)
     
     return refined_results
+
 
 #---------------------------------------------------------------------------
 # Cell 5: Function to validate and fix chord types
@@ -1122,45 +1122,6 @@ def validate_chord_type(chord_type):
             chord_type = chord_type.replace(bad, good)
     
     return chord_type
-#---------------------------------------------------------------------------------------
-def identify_unique_chord(time_window_results):
-    """
-    Refine chord identification using weighted interval analysis
-    
-    Args:
-        time_window_results (list): Results from time window analysis
-    
-    Returns:
-        list: Refined chord identification results
-    """
-    refined_results = []
-    
-    for window in time_window_results:
-        # Extract key information
-        intervals = window['intervals']
-        interval_durations = window['interval_durations']
-        
-        # Calculate normalized weights for intervals
-        total_duration = sum(interval_durations.values())
-        normalized_weights = {
-            interval: duration / total_duration 
-            for interval, duration in interval_durations.items()
-        }
-        
-        # Get the unique chord type using the improved method
-        chord_type = classify_chord_by_weights(normalized_weights)
-        
-        # Validate the chord type against music theory
-        chord_type = validate_chord_type(chord_type)
-        
-        # Update the window result
-        updated_window = window.copy()
-        updated_window['refined_chord_type'] = chord_type
-        updated_window['normalized_weights'] = normalized_weights
-        
-        refined_results.append(updated_window)
-    
-    return refined_results
 
 #---------------------------------------------------------------------------------------
 def extract_harmony_only_chords(harmony_notes, start_beat, end_beat, beats_per_bar, bar_idx):
@@ -1900,19 +1861,32 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
             ))
             
             # Add chord name if there's enough space
-            if relative_end - relative_start >= 0.15:  # Can use smaller threshold since vertical text takes less width
-                ax.text(
-                    relative_start + (relative_end - relative_start)/2, 
-                    0.5, 
-                    name, 
-                    ha='center',
-                    va='center',
-                    fontsize=8,
-                    fontweight='bold',
-                    rotation=90,
-                    rotation_mode='anchor',
-                    color=text_color  # Use the calculated optimal text color
-                )
+            
+            # Draw the chord name as before
+            ax.text(
+                relative_start + (relative_end - relative_start) / 2, 
+                0.5, 
+                name,
+                ha='center',
+                va='center',
+                fontsize=10,
+                # fontweight='bold',
+                rotation=90,
+                rotation_mode='anchor',
+                color=text_color
+            )
+
+            # Add the confidence number at the top center of the chord rectangle
+            confidence = chord.get('confidence', 0)
+            ax.text(
+                relative_start + (relative_end - relative_start) / 2, 
+                0.8,  # Adjust this value as needed to position above the chord rectangle
+                f"{confidence:.2f}",
+                ha='center',
+                va='bottom',
+                fontsize=5,  # Smaller font for the confidence number
+                color=text_color
+            )
         
         # Draw bar lines and numbers for this row
         for bar in range(start_bar, end_bar + 1):
@@ -1981,7 +1955,8 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
     print(f"Visualization saved as: chord_progression.pdf")
     
     
-    
+#----------------------------------------------------------------------------------
+# Function to extract all chords with defined length
 def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_beats=2, bars_per_row=16, verbose=False, plot=True):
     """
     Extract chords using fixed-length windows (half-bar by default), using bass notes to confirm root
@@ -2195,6 +2170,7 @@ def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_b
             # Use the identify_unique_chord function to get refined chord type
             refined_results = identify_unique_chord([window_result])
             refined_chord_type = refined_results[0]['refined_chord_type']
+            confidence = refined_results[0].get('confidence', 0)
             
             chord_name = f"{fix_note_name(root_name)}{refined_chord_type}"
             
@@ -2206,7 +2182,7 @@ def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_b
             
             # Calculate significant intervals based on normalized weights
             significant_intervals = [i for i, w in normalized_weights.items() 
-                                   if w >= 0.15 or i == 0]
+                                   if w >= 0.1 or i == 0]
             
             # Determine source type based on root origin
             if 'bass' in pc_to_source.get(root_pc, []):
@@ -2223,7 +2199,8 @@ def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_b
                 'chord_type': refined_chord_type,
                 'chord_name': chord_name,
                 'intervals': significant_intervals,
-                'source': source_type
+                'source': source_type,
+                'confidence': confidence
             })
                 
     finally:
@@ -2233,6 +2210,7 @@ def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_b
     
     # Sort chords by start time
     all_chords.sort(key=lambda x: x['beat_start'])
+    #all_chords = merge_adjacent_chords(all_chords)
     
     # Plot the multi-row timeline only if requested
     if plot:
@@ -2246,3 +2224,76 @@ def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_b
     
     # Otherwise return the full chord data
     return all_chords
+
+
+def merge_adjacent_chords(chords, gap_tolerance=0.0):
+    """
+    Merge adjacent chords that have the same root. Among chords with slight differences,
+    choose the one with the highest confidence as representative.
+    
+    Args:
+        chords (list): List of chord dictionaries. Each chord should have at least:
+                       'root', 'beat_start', 'beat_end', and 'confidence'.
+        gap_tolerance (float): Maximum gap (in beats) allowed between chords to consider them adjacent.
+        
+    Returns:
+        list: A new list of merged chord dictionaries.
+    """
+    if not chords:
+        return []
+    
+    # Ensure chords are sorted by start time.
+    chords.sort(key=lambda c: c['beat_start'])
+    
+    merged_chords = []
+    # Start with the first chord as the current group.
+    current_group = [chords[0]]
+    
+    for chord in chords[1:]:
+        # If the current chord has the same root and is contiguous (allowing a small gap),
+        # then add it to the current group.
+        if (chord['root'] == current_group[-1]['root'] and 
+            chord['beat_start'] - current_group[-1]['beat_end'] <= gap_tolerance):
+            current_group.append(chord)
+        else:
+            # Process the current group into one merged chord.
+            merged_chord = merge_group(current_group)
+            merged_chords.append(merged_chord)
+            # Start a new group with the current chord.
+            current_group = [chord]
+    
+    # Process any remaining group.
+    if current_group:
+        merged_chords.append(merge_group(current_group))
+    
+    return merged_chords
+
+def merge_group(group):
+    """
+    Merge a group of chords (all with the same root) into one chord.
+    The merged chord will span from the start of the first chord to the end of the last chord.
+    The representative chord (for chord type and confidence) is chosen as the one with the highest confidence.
+    
+    Args:
+        group (list): List of chord dictionaries with the same 'root'.
+        
+    Returns:
+        dict: A single chord dictionary representing the merged group.
+    """
+    # Determine the overall start and end
+    merged_start = min(chord['beat_start'] for chord in group)
+    merged_end = max(chord['beat_end'] for chord in group)
+    merged_duration = merged_end - merged_start
+
+    # Pick the chord with the highest confidence as the representative
+    best_chord = max(group, key=lambda c: c.get('confidence', 0))
+    
+    # Create a merged chord dictionary.
+    merged_chord = best_chord.copy()
+    merged_chord['beat_start'] = merged_start
+    merged_chord['beat_end'] = merged_end
+    merged_chord['duration'] = merged_duration
+    # Optionally, you could recompute the confidence as, say, the average or maximum.
+    # Here we simply keep the highest confidence.
+    
+    return merged_chord
