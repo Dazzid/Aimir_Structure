@@ -1881,10 +1881,10 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
             ax.text(
                 relative_start + (relative_end - relative_start) / 2, 
                 0.8,  # Adjust this value as needed to position above the chord rectangle
-                f"{confidence:.2f}",
+                f"{confidence:.1f}",
                 ha='center',
                 va='bottom',
-                fontsize=5,  # Smaller font for the confidence number
+                fontsize=7,  # Smaller font for the confidence number
                 color=text_color
             )
         
@@ -1957,7 +1957,7 @@ def plot_chord_timeline_multirow(chords, total_bars, beats_per_bar=4, bars_per_r
     
 #----------------------------------------------------------------------------------
 # Function to extract all chords with defined length
-def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_beats=2, bars_per_row=16, verbose=False, plot=True):
+def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_beats=2, bars_per_row=16, merge=False, verbose=False, plot=True):
     """
     Extract chords using fixed-length windows (half-bar by default), using bass notes to confirm root
     
@@ -2210,11 +2210,10 @@ def extract_all_chords_with_defined_length(notes, beats_per_bar=4, window_size_b
     
     # Sort chords by start time
     all_chords.sort(key=lambda x: x['beat_start'])
-    #all_chords = merge_adjacent_chords(all_chords)
+    if merge: all_chords = merge_adjacent_chords(all_chords)
     
     # Plot the multi-row timeline only if requested
-    if plot:
-        plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
+    plot_chord_timeline_multirow(all_chords, total_bars, beats_per_bar, bars_per_row)
     
     # Return only a summary string if not verbose
     if not verbose:
