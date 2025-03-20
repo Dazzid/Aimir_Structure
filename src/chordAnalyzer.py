@@ -921,9 +921,9 @@ def classify_chord_by_weights(normalized_weights, min_threshold = 0.1, root_pc=N
         else:
             return "7b13"  # Dominant with #5/b13
     
-    # # Special case for maj7 with augmented fifth
-    # if is_maj7 and has_aug_fifth:
-    #     return "maj7"  # Major 7 with b13
+    # Special case for maj7 with augmented fifth
+    if is_maj7 and has_aug_fifth:
+        return "maj7"  # Major 7 with b13
     
     # # Special case for pure augmented triad (only root, major 3rd, #5)
     # if (max_third == 4 and has_aug_fifth and normalized_weights.get(4, 0) > min_threshold):
