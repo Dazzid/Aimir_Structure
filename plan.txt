@@ -1,0 +1,8 @@
+- Compare the form using the self similarity matrix
+- Check the quality of extracted chords against iReal
+- Test SVM
+- Compare its quality against 50 songs from iReal
+- Run Tonnetz chord detection
+- Test PCP SVM
+- Measure which method is better
+- Find tendencies by main style tags

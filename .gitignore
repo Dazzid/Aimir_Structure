@@ -1,0 +1,23 @@
+# Remove unrelated shell commands
+# cache and python bytecode
+src/__pycache__/
+
+# ignore samples directory
+samples/
+
+# Ignore entire assets directory
+src/assets/
+
+src/test_audio/
+
+src/progress/
+
+src/results/
+
+src/midi_files/
+
+src/logs/
+
+dataset/
+dataset_corrected/
+dataset_2/
