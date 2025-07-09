@@ -21,3 +21,4 @@ src/logs/
 dataset/
 dataset_corrected/
 dataset_2/
+ngram_datasets/
