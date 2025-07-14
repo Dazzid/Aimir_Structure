@@ -7,9 +7,9 @@ import random
 
 def main():
     collections = ["lastfm", "suno", "udio"]
-    n_jobs = 30  # Number of parallel workers
+    n_jobs = 20  # Number of parallel workers
     random.seed(42)  # For reproducibility
-    dataset_size = 20000  # Number of songs to process per collection
+    dataset_size = 20010  # Number of songs to process per collection
     jobs = []
     for collection in collections:
         

@@ -20,16 +20,16 @@ from JSON_parser import get_JSON_files
 
 def process_single_file(file_path):
     """
-    Process a single _vocab_corrected JSON file and save the normalized result.
+    Process a single _analysis JSON file and save the normalized result.
     
     Args:
-        file_path (str): Path to the *_vocab_corrected.json file
+        file_path (str): Path to the *_analysis.json file
     """
     # Extract the ID from the file path
     file_path = Path(file_path)
     folder_path = file_path.parent
     file_name = file_path.stem  # Remove .json extension
-    id_part = file_name.replace('_vocab_corrected', '')
+    id_part = file_name.replace('_analysis', '')
     
     # Define output path
     output_path = folder_path / f"{id_part}_normalized.json"
@@ -75,9 +75,9 @@ def find_all_analysis_files():
     all_files = []
     
     for collection in collections:
-        dataset_path = f'/workspace/dataset_corrected/{collection}'
+        dataset_path = f'/workspace/dataset_2/{collection}'
         # Find all *_analysis.json files in subdirectories
-        pattern = os.path.join(dataset_path, '*', '*_vocab_corrected.json')
+        pattern = os.path.join(dataset_path, '*', '*_analysis.json')
         files = glob.glob(pattern)
         all_files.extend(files)
     
