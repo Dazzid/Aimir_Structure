@@ -6,10 +6,10 @@ from get_music_form import process_song
 import random
 
 def main():
-    collections = ["lastfm", "suno", "udio"]
+    collections = ["suno"]
     n_jobs = 20  # Number of parallel workers
     random.seed(42)  # For reproducibility
-    dataset_size = 20010  # Number of songs to process per collection
+    dataset_size = 20030  # Number of songs to process per collection
     jobs = []
     for collection in collections:
         

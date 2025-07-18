@@ -41,92 +41,105 @@ CHORD_COLORS = {
 #---------------------------------------------------------------------------
 # Cell 2: Define chord structures with their characteristic intervals
 CHORD_TYPES = {
-    # Basic triads
-    "": {  # Major triad
+    # ─── Basic triads ─────────────────────────────────────────
+    "": {          # Major triad
         "intervals": [0, 4, 7],
-        "required": [0, 4]
+        "required":  [0, 4]
     },
-    "m": {  # Minor triad
+    "m": {         # Minor triad
         "intervals": [0, 3, 7],
-        "required": [0, 3]
+        "required":  [0, 3]
     },
-    "dim": {  # Diminished triad
+    "dim": {       # Diminished triad
         "intervals": [0, 3, 6],
-        "required": [0, 3, 6]
+        "required":  [0, 3, 6]
     },
-    "aug": {  # Augmented triad
+    "aug": {       # Augmented triad
         "intervals": [0, 4, 8],
-        "required": [0, 4, 8]
+        "required":  [0, 4, 8]
     },
-    
-    # Seventh chords
-    "7": {  # Dominant seventh
+
+    # ─── Sixth chords (NEW) ──────────────────────────────────
+    "6": {         # Major sixth (a.k.a. add 13)
+        "intervals": [0, 4, 7, 9],
+        "required":  [0, 4, 9]      # root, M3, M6
+    },
+    "m6": {        # Minor sixth
+        "intervals": [0, 3, 7, 9],
+        "required":  [0, 3, 9]      # root, m3, M6
+    },
+
+    # ─── Seventh chords ─────────────────────────────────────
+    "7": {         # Dominant seventh
         "intervals": [0, 4, 7, 10],
-        "required": [0, 4, 10]
+        "required":  [0, 4, 10]
     },
-    "maj7": {  # Major seventh
+    "maj7": {      # Major seventh
         "intervals": [0, 4, 7, 11],
-        "required": [0, 4, 11]
+        "required":  [0, 4, 11]
     },
-    "m7": {  # Minor seventh
+    "m7": {        # Minor seventh
         "intervals": [0, 3, 7, 10],
-        "required": [0, 3, 10]
+        "required":  [0, 3, 10]
     },
-    "dim7": {  # Diminished seventh
+    "dim7": {      # Diminished seventh
         "intervals": [0, 3, 6, 9],
-        "required": [0, 3, 9]
+        "required":  [0, 3, 9]
     },
-    "m7b5": {  # Half-diminished seventh
+    "m7b5": {      # Half‑diminished seventh
         "intervals": [0, 3, 6, 10],
-        "required": [0, 3, 6, 10]
+        "required":  [0, 3, 6, 10]
     },
-    
-    # Extended chords
-    "9": {  # Dominant ninth
+
+    # ─── Extended chords ────────────────────────────────────
+    "9": {         # Dominant ninth
         "intervals": [0, 4, 7, 10, 2],
-        "required": [0, 4, 10, 2]
+        "required":  [0, 4, 10, 2]
     },
-    "maj9": {  # Major ninth
+    "maj9": {      # Major ninth
         "intervals": [0, 4, 7, 11, 2],
-        "required": [0, 4, 11, 2]
+        "required":  [0, 4, 11, 2]
     },
-    "m9": {  # Minor ninth
+    "m9": {        # Minor ninth
         "intervals": [0, 3, 7, 10, 2],
-        "required": [0, 3, 10, 2]
+        "required":  [0, 3, 10, 2]
     },
-    
-    # Altered chords
-    "7b9": {  # Dominant seventh flat ninth
+
+    # ─── Altered chords ─────────────────────────────────────
+    "7b9": {       # Dominant seventh ♭9
         "intervals": [0, 4, 7, 10, 1],
-        "required": [0, 4, 10, 1]
+        "required":  [0, 4, 10, 1]
     },
-    "7#9": {  # Dominant seventh sharp ninth
+    "7#9": {       # Dominant seventh ♯9
         "intervals": [0, 4, 7, 10, 3],
-        "required": [0, 4, 10, 3]
+        "required":  [0, 4, 10, 3]
     },
-    "7#11": {  # Dominant seventh sharp eleventh
+    "7#11": {      # Dominant seventh ♯11
         "intervals": [0, 4, 7, 10, 6],
-        "required": [0, 4, 10, 6]
+        "required":  [0, 4, 10, 6]
     },
-    
-    # Suspended chords
-    "sus4": {  # Suspended fourth
+
+    # ─── Suspended chords ───────────────────────────────────
+    "sus4": {      # Suspended fourth
         "intervals": [0, 5, 7],
-        "required": [0, 5]
+        "required":  [0, 5]
     },
-    "7sus4": {  # Dominant seventh suspended fourth
+    "7sus4": {     # Dominant seventh suspended fourth
         "intervals": [0, 5, 7, 10],
-        "required": [0, 5, 10]
+        "required":  [0, 5, 10]
     },
-    "7alt": {  # Dominant seventh altered (with b5 and b9)
+
+    # ─── Misc. altered dominant ─────────────────────────────
+    "7alt": {      # Dominant seventh altered (♭5 + ♭9)
         "intervals": [0, 4, 6, 10, 1],
-        "required": [0, 4, 10]
+        "required":  [0, 4, 10]
     },
-    "7b13": {  # Dominant seventh flat thirteenth (same as #5)
+    "7b13": {      # Dominant seventh ♭13 (= ♯5)
         "intervals": [0, 4, 7, 8, 10],
-        "required": [0, 4, 10, 8]
+        "required":  [0, 4, 10, 8]
     }
 }
+
 
 #get the bars of the song
 #---------------------------------------------------------------------------
@@ -906,215 +919,248 @@ def clean_chord_quality(quality):
 
 #---------------------------------------------------------------------------------------
 
-def classify_chord_by_weights(normalized_weights, min_threshold=0.01, root_pc=None):
+def classify_chord_by_weights(normalized_weights,
+                              min_threshold: float = 0.03):
     """
-    Hybrid chord classification: exact structural match (via CHORD_TYPES) + fallback heuristics.
+    Pick the best‑matching chord‑type from CHORD_TYPES.
+
+    Parameters
+    ----------
+    normalized_weights : dict[int, float]
+        interval (0‑11) → weight (sums to 1.0).
+    min_threshold : float
+        Ignore intervals whose weight is below this amount.
+
+    Returns
+    -------
+    str
+        The chord‑type key ('' for major triad) or the result of
+        fallback_chord_identification() if nothing in CHORD_TYPES fits.
     """
-    # Create interval set with more lenient threshold for diminished chord detection
-    interval_set = {i for i, w in normalized_weights.items() if w > 0.05}
+    significant = {i for i, w in normalized_weights.items() if w >= min_threshold}
+
+    best_type, best_score = None, float('-inf')
+
+    for ctype, spec in CHORD_TYPES.items():
+        required   = set(spec["required"])
+        all_ints   = set(spec["intervals"])
+
+        # Skip if any required tone is completely missing
+        if not required.issubset(significant):
+            continue
+
+        score = 0.0
+
+        # Big bonus for required tones
+        for i in required:
+            score += normalized_weights.get(i, 0.0) * 4.0
+
+        # Small bonus for optional tones that belong to this chord
+        for i in (all_ints - required):
+            score += normalized_weights.get(i, 0.0)
+
+        # Penalty for foreign tones
+        for i, w in normalized_weights.items():
+            if i not in all_ints:
+                score -= w * 0.5
+
+        # Tiny extra for coverage ratio
+        coverage = len(all_ints & significant) / len(all_ints)
+        score += coverage * 0.3
+
+        if score > best_score:
+            best_type, best_score = ctype, score
+
+    if best_type is None:
+        return fallback_chord_identification(significant, normalized_weights)
+
+    return best_type
+
+
+def fallback_chord_identification(intervals, weights):
+    """
+    Fallback chord identification for patterns not perfectly matching CHORD_TYPES.
+    Keeps the same logic as before but more robust.
+    """
+    # Check for basic intervals
+    has_minor_third = 3 in intervals
+    has_major_third = 4 in intervals
+    has_perfect_fifth = 7 in intervals
+    has_diminished_fifth = 6 in intervals
+    has_augmented_fifth = 8 in intervals
+    has_minor_seventh = 10 in intervals
+    has_major_seventh = 11 in intervals
+    has_diminished_seventh = 9 in intervals
+    has_ninth = 2 in intervals
+    has_fourth = 5 in intervals
     
-    # Special handling for diminished chords - use lower threshold
-    dim_interval_set = {i for i, w in normalized_weights.items() if w > 0.03}
-    
-    # 1. Exact or template-based match from CHORD_TYPES
-    best_label = None
-    best_score = 0
-    
-    for label, spec in CHORD_TYPES.items():
-        required = set(spec["required"])
-        
-        # Use different thresholds for different chord types
-        if label in ["dim", "dim7", "m7b5"]:
-            # For diminished chords, use more lenient checking
-            # Check if at least 80% of required intervals are present
-            present_required = sum(1 for i in required if i in dim_interval_set)
-            required_ratio = present_required / len(required)
-            
-            if required_ratio >= 0.8:  # At least 80% of required intervals
-                # Calculate score based on actual weights
-                score = sum(normalized_weights.get(i, 0) for i in spec["intervals"])
-                if score > best_score:
-                    best_score = score
-                    best_label = label
-        else:
-            # For other chords, use original strict checking
-            if not required.issubset(interval_set):
-                continue
-            score = sum(normalized_weights.get(i, 0) for i in spec["intervals"])
-            if score > best_score:
-                best_score = score
-                best_label = label
-    
-    if best_label:
-        return best_label
-    
-    # 2. Manual diminished chord detection if not caught above
-    has_minor_third = normalized_weights.get(3, 0) >= 0.05
-    has_dim_fifth = normalized_weights.get(6, 0) >= 0.03  # Lower threshold
-    has_dim_seventh = normalized_weights.get(9, 0) >= 0.05
-    has_minor_seventh = normalized_weights.get(10, 0) >= 0.05
-    
-    if has_minor_third and has_dim_fifth:
-        if has_dim_seventh:
+    # Diminished chords (high priority)
+    if has_minor_third and has_diminished_fifth:
+        if has_diminished_seventh:
             return "dim7"
         elif has_minor_seventh:
             return "m7b5"
         else:
             return "dim"
     
-    # 3. Heuristic fallback: altered dominants, sus chords, power chords, etc.
-    third_intervals = {3: 'm', 4: ''}  # minor or major third
-    fifth_intervals = {6: 'b5', 7: '', 8: 'b13'}
-    seventh_intervals = {10: '7', 11: 'maj7'}
-    ninth_intervals = {1: 'b9', 2: '9'}
+    # Major-based chords
+    if has_major_third:
+        if has_augmented_fifth:
+            return "aug"
+        elif has_major_seventh:
+            if has_ninth:
+                return "maj9"
+            return "maj7"
+        elif has_minor_seventh:
+            if has_ninth:
+                return "9"
+            return "7"
+        else:
+            return ""  # Major triad
     
-    max_third = max([(normalized_weights.get(i, 0), i) for i in third_intervals], 
-                   key=lambda x: x[0], default=(0, None))[1]
-    max_fifth = max([(normalized_weights.get(i, 0), i) for i in fifth_intervals], 
-                   key=lambda x: x[0], default=(0, None))[1]
-    max_seventh = max([(normalized_weights.get(i, 0), i) for i in seventh_intervals], 
-                     key=lambda x: x[0], default=(0, None))[1]
-    max_ninth = max([(normalized_weights.get(i, 0), i) for i in ninth_intervals], 
-                   key=lambda x: x[0], default=(0, None))[1]
-    
-    is_dominant = max_seventh == 10 and normalized_weights.get(10, 0) >= min_threshold
-    is_maj7 = max_seventh == 11 and normalized_weights.get(11, 0) >= min_threshold
-    has_aug_fifth = max_fifth == 8 and normalized_weights.get(8, 0) >= min_threshold
-    has_b9 = max_ninth == 1 and normalized_weights.get(1, 0) >= min_threshold
-    has_b5 = max_fifth == 6 and normalized_weights.get(6, 0) >= min_threshold
-    has_fourth = normalized_weights.get(5, 0) >= min_threshold
-    no_third = (normalized_weights.get(3, 0) < 0.01 and normalized_weights.get(4, 0) < 0.01)
-    is_sus = has_fourth and no_third
-    
-    # Altered dominant detection
-    if is_dominant and has_aug_fifth and has_b9:
-        return "7alt"
-    elif is_dominant and has_aug_fifth:
-        return "7b13"
-    elif is_dominant and has_b9:
-        return "7b9"
-    elif is_dominant and has_b5:
-        return "7#11"
+    # Minor-based chords
+    elif has_minor_third:
+        if has_minor_seventh:
+            if has_ninth:
+                return "m9"
+            return "m7"
+        else:
+            return "m"  # Minor triad
     
     # Suspended chords
-    if is_sus:
-        return "7sus4" if is_dominant else "sus4"
+    elif has_fourth and not has_major_third and not has_minor_third:
+        if has_minor_seventh:
+            return "7sus4"
+        return "sus4"
     
-    # Construct basic chord label
-    chord_type = ""
-    if not is_sus and max_third and normalized_weights.get(max_third, 0) > min_threshold:
-        chord_type = third_intervals.get(max_third, '')
-    
-    if max_seventh and normalized_weights.get(max_seventh, 0) > min_threshold:
-        chord_type += seventh_intervals.get(max_seventh, '')
-    
-    # Handle flat 5 in non-dominant contexts
-    if max_fifth == 6 and normalized_weights.get(6, 0) > min_threshold and not is_dominant:
-        if chord_type.startswith("m") and "7" in chord_type:
-            return "m7b5"
-        elif not chord_type.startswith("m"):
-            chord_type += "b5"
-    
-    # Add ninth extensions
-    if max_ninth and normalized_weights.get(max_ninth, 0) > min_threshold:
-        chord_type += ninth_intervals.get(max_ninth, '')
-    
-    # Power chord fallback
-    if chord_type == "" and max_fifth == 7 and normalized_weights.get(7, 0) > min_threshold:
+    # Power chord
+    elif has_perfect_fifth and not has_major_third and not has_minor_third:
         return "5"
     
-    chord_type = clean_chord_quality(chord_type)
-    return chord_type
+    # Default to major triad
+    return ""
 
 
 #---------------------------------------------------------------------------
-def identify_unique_chord(time_window_results):
+def identify_unique_chord(time_window_results,
+                          duration_threshold: float = 0.10,
+                          rel_threshold_ratio: float = 0.08,
+                          min_weight_threshold: float = 0.03):
     """
-    Refine chord identification using weighted interval analysis with better bass handling.
-    
-    Args:
-        time_window_results (list): Results from time window analysis.
-        
-    Returns:
-        list: Refined chord identification results with a 'confidence' value.
-    """
-    refined_results = []
-    
-    for window in time_window_results:
-        # Extract key information - now including absolute pitch information
-        intervals = window.get('intervals', [])
-        interval_durations = window.get('interval_durations', {}).copy()
-        root_pitch = window.get('root_pitch', None)  # Get absolute root pitch if available
-        absolute_pitches = window.get('absolute_pitches', [])  # Get absolute pitches if available
-        
-        # Ensure the root is always present with a nonzero duration
-        if 0 not in interval_durations or interval_durations[0] == 0:
-            if 'start' in window and 'end' in window:
-                interval_durations[0] = window['end'] - window['start']
-            else:
-                interval_durations[0] = 1e-6  # Minimal fallback value
-        
-        # Calculate normalized weights for intervals
-        total_duration = sum(interval_durations.values())
-        
-        if total_duration == 0:
-            normalized_weights = {i: 0 for i in interval_durations}
-        else:
-            normalized_weights = {interval: duration / total_duration
-                                for interval, duration in interval_durations.items()}
-        
-        # If we have absolute pitch information, use it to enhance chord detection
-        enhanced_weights = normalized_weights.copy()
-        
-        if root_pitch is not None and absolute_pitches:
-            # Calculate weights based on note distribution in actual chord voicing
-            # This can help prioritize structural notes when they appear multiple times
-            pitch_counts = {}
-            for pitch in absolute_pitches:
-                pc = pitch % 12
-                if pc not in pitch_counts:
-                    pitch_counts[pc] = 0
-                pitch_counts[pc] += 1
-            
-            # Enhance weights of intervals that appear multiple times in the voicing
-            root_pc = root_pitch % 12
-            for pc, count in pitch_counts.items():
-                interval = (pc - root_pc) % 12
-                if interval in enhanced_weights and count > 1:
-                    # Increase weight for intervals that appear multiple times
-                    enhanced_weights[interval] *= (1 + 0.2 * (count - 1))
-            
-            # Renormalize weights
-            total_enhanced = sum(enhanced_weights.values())
-            if total_enhanced > 0:
-                enhanced_weights = {k: v / total_enhanced for k, v in enhanced_weights.items()}
-        
-        # Get the unique chord type using the enhanced weights
-        chord_type = classify_chord_by_weights(enhanced_weights)
-        
-        # Validate the chord type against music theory
-        chord_type = validate_chord_type(chord_type)
-        
-        # Determine required intervals
-        if chord_type in CHORD_TYPES:
-            required_intervals = CHORD_TYPES[chord_type]["required"]
-        else:
-            required_intervals = [0]
-        
-        # Compute confidence as the sum of normalized weights for the required intervals
-        confidence = sum(normalized_weights.get(i, 0) for i in required_intervals)
-        
-        # Update the window result with refined chord type and confidence
-        updated_window = window.copy()
-        updated_window['refined_chord_type'] = chord_type
-        updated_window['normalized_weights'] = normalized_weights
-        updated_window['enhanced_weights'] = enhanced_weights  # Store enhanced weights
-        updated_window['confidence'] = confidence
-        
-        refined_results.append(updated_window)
-    
-    return refined_results
+    Refine chord identification for each analysis window.
 
+    New behaviour
+    -------------
+    • Keeps 3rds/7ths even when short; boosts their weight.  
+    • Detects major/minor **6** chords (root + 3rd + 5th + 6th).  
+    • Optionally over‑rides a wrong root if a clear triad outweighs it.
+    """
+    refined        = []
+    CORE_INTERVALS = {0, 3, 4, 7, 9, 10, 11}     # include the 6th (9)
+
+    # ── internal helper: look for the strongest triad, irrespective of root ──
+    def triad_vote(abs_pitches):
+        from collections import Counter
+
+        pc_counts = Counter(p % 12 for p in abs_pitches)
+        best_root, best_kind, best_votes = None, None, 0
+
+        for pc in range(12):
+            votes_maj = (pc_counts[pc] * 2 +
+                         pc_counts[(pc + 4) % 12] +
+                         pc_counts[(pc + 7) % 12])
+            votes_min = (pc_counts[pc] * 2 +
+                         pc_counts[(pc + 3) % 12] +
+                         pc_counts[(pc + 7) % 12])
+
+            if votes_maj > best_votes:
+                best_root, best_kind, best_votes = pc, "maj", votes_maj
+            if votes_min > best_votes:
+                best_root, best_kind, best_votes = pc, "min", votes_min
+
+        return best_root, best_kind, best_votes
+
+    # ── main loop over windows ──────────────────────────────────────────────
+    for win in time_window_results:
+        int_durs     = win.get("interval_durations", {}).copy()
+        root_pitch   = win.get("root_pitch")
+        abs_pitches  = win.get("absolute_pitches", [])
+
+        if not int_durs:
+            refined.append(win)
+            continue
+
+        # 1 · hybrid duration filter
+        max_dur = max(int_durs.values())
+        dyn_cut = max(duration_threshold, max_dur * rel_threshold_ratio)
+        filtered = {i: d for i, d in int_durs.items() if d >= dyn_cut}
+
+        # always keep core tones even if very short
+        for i in CORE_INTERVALS & int_durs.keys():
+            filtered.setdefault(i, int_durs[i])
+
+        if 0 not in filtered:
+            filtered[0] = 1e-6          # placeholder to keep a root entry
+
+        # 2 · normalise to weights
+        total   = sum(filtered.values())
+        weights = {i: d / total for i, d in filtered.items()}
+
+        # 3 · boost thirds and sevenths
+        for i in (3, 4, 11):
+            if i in weights:
+                weights[i] *= 1.5
+
+        # 4 · optional root correction if a triad overwhelms the current root
+        if abs_pitches:
+            tri_root, _, votes = triad_vote(abs_pitches)
+            if tri_root is not None:
+                current_root_pc = root_pitch % 12 if root_pitch is not None else None
+                if current_root_pc is None or votes > (len(abs_pitches) * 1.5):
+                    # remap intervals so new root becomes 0
+                    shift = (-tri_root) % 12
+                    weights = {(i + shift) % 12: w for i, w in weights.items()}
+                    root_pitch = (root_pitch or tri_root) - tri_root  # keep octave
+
+        # 5 · octave reinforcement (same as before)
+        enhanced = weights.copy()
+        if root_pitch is not None and abs_pitches:
+            pc_counts = {}
+            for p in abs_pitches:
+                pc_counts[p % 12] = pc_counts.get(p % 12, 0) + 1
+
+            root_pc = root_pitch % 12
+            for pc, cnt in pc_counts.items():
+                interval = (pc - root_pc) % 12
+                if interval in enhanced and cnt > 1:
+                    enhanced[interval] *= (1 + 0.2 * (cnt - 1))
+
+            # re‑normalise
+            S = sum(enhanced.values())
+            if S:
+                enhanced = {i: w / S for i, w in enhanced.items()}
+
+        # 6 · classify
+        chord_type = classify_chord_by_weights(enhanced,
+                                               min_threshold=min_weight_threshold)
+        chord_type = validate_chord_type(chord_type)
+
+        required   = CHORD_TYPES.get(chord_type, {"required": [0]})["required"]
+        confidence = sum(weights.get(i, 0.0) for i in required)
+
+        # 7 · pack up
+        out = win.copy()
+        out.update({
+            "refined_chord_type":          chord_type,
+            "filtered_interval_durations": filtered,
+            "normalized_weights":          weights,
+            "enhanced_weights":            enhanced,
+            "confidence":                  confidence,
+            "root_pitch_corrected":        root_pitch,
+        })
+        refined.append(out)
+
+    return refined
 
 #---------------------------------------------------------------------------
 # Cell 5: Function to validate and fix chord types

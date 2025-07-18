@@ -68,7 +68,7 @@ def process_song(collection, song_id, base_path):
         functional_chords = ca.functional_chords(chord_results, tonality)
         beats = results['beats']
         formData = fem.formExtractor()
-        data_dict = formData.optimize_song_structure(audio_path, functional_chords, beats, K=5, min_duration=2.5)
+        data_dict = formData.optimize_song_structure(audio_path, functional_chords, beats, K=4, min_duration=2.5)
 
         with open(out_json, "w") as f:
             json.dump(data_dict, f, cls=CustomJSONEncoder)

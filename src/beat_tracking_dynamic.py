@@ -2641,6 +2641,10 @@ def analyze_chords_from_beat_results(results, beats_per_row=64, plot_it=False):
         if not bass_notes:
             chord_results_per_beat.append(None)
             continue
+        
+        # print("---------------------------")
+        # for note in harmony_notes:
+        #     print(note['pitch'], note['velocity'], note['duration'])
 
         # Use *lowest* bass as root
         root_note = min(bass_notes, key=lambda n: n['pitch'])
@@ -2656,8 +2660,16 @@ def analyze_chords_from_beat_results(results, beats_per_row=64, plot_it=False):
         # Sort all notes by pitch
         sorted_notes = sorted(all_notes, key=lambda x: x['pitch'])
         
+        # print("---------------------------")
+        # for note in sorted_notes:
+        #     note_name = pitch.Pitch(note['pitch']).name
+        #     note_name = note_name.replace('-', 'b')  # Replace '-' with 'b' for flats
+        #     print(note['pitch'], note_name, note['velocity'], note['duration'])
+
         # Create array of absolute pitches
         midi_pitches = np.array([note['pitch'] for note in sorted_notes])
+        
+        #print also the names of the notes using music21
         
         # Calculate pitch class intervals from root
         pc_intervals = [(p % 12 - root_pc) % 12 for p in midi_pitches]
@@ -2675,7 +2687,7 @@ def analyze_chords_from_beat_results(results, beats_per_row=64, plot_it=False):
         if 0 not in interval_durations:
             interval_durations[0] = beat_duration
         
-        # Create window result for chord analyzer - DIRECT CALL TO identify_unique_chord
+        # Create window result for chord analyzer identify_unique_chord
         window_result = {
             'intervals': pc_intervals,
             'interval_durations': interval_durations,
@@ -2687,8 +2699,10 @@ def analyze_chords_from_beat_results(results, beats_per_row=64, plot_it=False):
         }
         
         # Use identify_unique_chord directly instead of analyze_chord_from_note_bag
-        refined_results = identify_unique_chord([window_result])
-        chord_type = refined_results[0]['refined_chord_type']
+        result = identify_unique_chord([window_result])
+        chord_type = result[0]['refined_chord_type']
+        
+        # print("chord:", root_name, chord_type)
         
         # Create chord info
         chord_info = {
