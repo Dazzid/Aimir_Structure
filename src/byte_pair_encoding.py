@@ -135,12 +135,12 @@ def plot_pattern_heatmap(collection_pattern_dict, analysis_type="chords", image_
     sns.heatmap(freq_matrix,
                 xticklabels=collection_list,
                 yticklabels=[str(p) for p in pattern_list],
-                cmap="viridis",
+                cmap="Grays",
                 linewidths=0.5,
                 annot=True,
                 fmt='.0f',
                 cbar=False)
-    plt.xlabel("Collection", fontsize=18, fontweight='bold')
+    plt.xlabel("", fontsize=18, fontweight='bold')
     plt.ylabel("Pattern", fontsize=18, fontweight='bold')
     plt.xticks(rotation=0, fontsize=18)
     plt.yticks(rotation=0, fontsize=18)
@@ -156,8 +156,8 @@ def main(analysis_type="bound_segments", use_cache=True, image_save_dir="./image
 
     for collection in ["lastfm", "suno", "udio"]:
         print(f"Processing collection: {collection} for {analysis_type} analysis")
-        collection_path = f"../dataset/{collection}"
-        bpe_cache_path = os.path.join(f"../dataset/bpe/{collection}_{analysis_type}.json")
+        collection_path = f"/workspace/dataset/{collection}"
+        bpe_cache_path = os.path.join(f"/workspace/dataset/bpe/{collection}_{analysis_type}.json")
 
         if use_cache and os.path.exists(bpe_cache_path):
             merge_rules, merge_history = load_bpe_results(bpe_cache_path)
@@ -189,4 +189,4 @@ def main(analysis_type="bound_segments", use_cache=True, image_save_dir="./image
     plot_pattern_heatmap(collection_patterns, analysis_type=analysis_type, image_save_dir=image_save_dir)
 
 if __name__ == "__main__":
-    main(analysis_type="bound_segments", use_cache=True, image_save_dir="../samples/")
+    main(analysis_type="bound_segments", use_cache=True, image_save_dir="../Figures/")
