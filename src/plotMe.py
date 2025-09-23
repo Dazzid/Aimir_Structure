@@ -16,161 +16,131 @@ import matplotlib.ticker as ticker
 import librosa.display
 import numpy as np
 
-my_colors = [
-    "#6BC1FF",
-    "#FFD269",
-    "#324DFF",
-    "#FFB700",
-    "#08F7FF",
-    "#FFAA00",
-    "#FFCC4D",
-    "#FFE091",
-    "#FFFF00",
-    "#FFF388" 
-]
+def plotWaveform(
+    y, sr, beats, bound_frames, new_bound_segs, size_x, size_y,
+    colormap_name='Blues', beat_offset=0.0, diagnostic=True,
+    label_colors=None,          # RGBA list from laplacian_2, indexed by original id 0..K-1
+    segment_color_ids=None,     # per-segment original ids 0..K-1, len == number of segments
+    hop_length=512
+):
+    """
+    Plot a light-grey log-frequency spectrogram with section overlays and beat grid.
+    If label_colors and segment_color_ids are provided, section colors match laplacian_2 exactly.
+    new_bound_segs can be 1-based human labels, used only for the text.
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib import patches
+    import matplotlib.colors as mcolors
+    import librosa, librosa.display
 
-def plotWaveform(y, sr, chords, beats, bound_frames, new_bound_segs, size_x, size_y, 
-                 colormap_name='viridis', beat_offset=0.0, diagnostic=False, custom_colors=my_colors):
-    """
-    Plot a waveform with beats, section boundaries, and chord labels on the x-axis.
-    """
-    # Handle color mapping
-    if custom_colors is None:
-        colormap = plt.get_cmap(colormap_name)
-        num_colors = len(set(new_bound_segs))
-        colors = colormap(np.linspace(0, 1, num_colors))
-    else:
-        colors = custom_colors
-    
-    # Calculate the total duration of the audio
+    # helper, convert beats to seconds if they look like frames
+    def beats_to_seconds(beats_arr):
+        beats_arr = np.asarray(beats_arr)
+        total_dur = librosa.get_duration(y=y, sr=sr)
+        looks_like_frames = (
+            np.issubdtype(beats_arr.dtype, np.integer)
+            or (beats_arr.size > 0 and beats_arr.max() > total_dur + 1.0)
+        )
+        return librosa.frames_to_time(beats_arr, sr=sr, hop_length=hop_length) if looks_like_frames else beats_arr
+
     total_duration = librosa.get_duration(y=y, sr=sr)
-    
-    # Create the figure and axis
-    if diagnostic:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(size_x, size_y), sharex=True, 
-                                        gridspec_kw={'height_ratios': [1, 1]})
-        ax = ax1
+
+    # figure, single axis with spectrogram
+    fig, ax = plt.subplots(figsize=(size_x, size_y))
+
+    # light grey colormap for background spectrogram
+    grey_levels = np.linspace(1.0, 0.5, 256)
+    grey_rgb = np.stack([grey_levels, grey_levels, grey_levels], axis=1)
+    light_greys = mcolors.ListedColormap(grey_rgb)
+
+    # compute diagnostic spectrogram and show it
+    S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop_length))
+    D = librosa.amplitude_to_db(S, ref=np.max)
+    librosa.display.specshow(
+        D, y_axis='log', sr=sr, x_axis='time',
+        hop_length=hop_length, cmap=light_greys, ax=ax
+    )
+
+    # times
+    beat_times = beats_to_seconds(beats) + float(beat_offset)
+    bound_times = librosa.frames_to_time(bound_frames, sr=sr, hop_length=hop_length)
+
+    # colors
+    use_exact = (
+        label_colors is not None and segment_color_ids is not None
+        and len(segment_color_ids) == len(new_bound_segs)
+    )
+    if use_exact:
+        def seg_facecolor(i):
+            cid = int(segment_color_ids[i])  # original id 0..K-1
+            return label_colors[cid]
     else:
-        fig, ax = plt.subplots(figsize=(size_x, size_y))
-    
-    # Plot the waveform without downsampling
-    librosa.display.waveshow(y, sr=sr, ax=ax, color="#000000", alpha=0.5)
-    
-    # Apply beat offset if provided
-    adjusted_beats = beats + beat_offset
-    
-    # Convert bound frames to times
-    bound_times = librosa.frames_to_time(bound_frames, sr=sr)
-    
-    # Plot section boundaries with custom colors
-    for i, (start, label) in enumerate(zip(bound_times, new_bound_segs)):
-        # Calculate the end time for this section
-        if i < len(bound_times) - 1:
-            end = bound_times[i + 1]
-        else:
-            end = total_duration
-        
-        # Ensure label index is in range for the colors array
-        color_idx = (label - 1) % len(colors)
+        base_cmap = plt.get_cmap(colormap_name)
+        order = []
+        for lab in new_bound_segs:
+            if lab not in order:
+                order.append(lab)
+        num_colors = max(1, len(order))
+        palette = base_cmap(np.linspace(0.08, 0.92, num_colors))
+        lab_to_idx = {lab: i for i, lab in enumerate(order)}
+        def seg_facecolor(i):
+            return palette[lab_to_idx.get(new_bound_segs[i], 0)]
+
+    # section overlays over full frequency range
+    ymin, ymax = ax.get_ylim()
+    for i, start in enumerate(bound_times):
+        end = bound_times[i + 1] if i < len(bound_times) - 1 else total_duration
         rect = patches.Rectangle(
-            (start, ax.get_ylim()[0]),
-            end - start,
-            ax.get_ylim()[1] - ax.get_ylim()[0],
-            facecolor=colors[color_idx],
-            alpha=0.5
+            (start, ymin), end - start, ymax - ymin,
+            facecolor=seg_facecolor(i), edgecolor='none', alpha=0.5
         )
         ax.add_patch(rect)
-        
-        # Add section label text at the midpoint of the section
-        midpoint = (start + end) / 2
-        ax.text(
-            midpoint,
-            0,
-            f"Section {label}",
-            rotation=90,
-            verticalalignment='center',
-            fontsize=16,
-            color='black',
-            weight='normal'
-        )
-    
-    # Plot beat visualization
-    for i, beat_time in enumerate(adjusted_beats):
-        # Draw vertical line for each beat
-        ax.axvline(x=beat_time, color="#C5C5C5", linestyle='-', linewidth=0.7, alpha=0.6)
-    
-    # For diagnostic view, add spectrogram to bottom plot
-    if diagnostic:
-        D = librosa.amplitude_to_db(np.abs(librosa.stft(y)), ref=np.max)
-        librosa.display.specshow(D, y_axis='log', sr=sr, x_axis='time', ax=ax2)
-        
-        for beat_time in adjusted_beats:
-            ax2.axvline(x=beat_time, color='#990000', linestyle='-', linewidth=0.7, alpha=0.6)
-        
-        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
-        onset_frames = librosa.onset.onset_detect(onset_envelope=onset_env, sr=sr)
-        onset_times = librosa.frames_to_time(onset_frames, sr=sr)
-        
-        for onset_time in onset_times:
-            ax2.axvline(x=onset_time, color='green', linestyle='--', linewidth=0.7, alpha=0.6)
-        
-        ax2.set_ylabel('Frequency (Hz)')
-        ax2.set_xlabel('Time (mm:ss)')
-    
-    # Set x-axis limits
+       
+        midpoint = 0.5 * (start + end)
+
+        # convert midpoint (time) to an axes-fraction so we can use a safe transform
+        x0, x1 = ax.get_xlim()
+        x_frac = 0.5 if x1 == x0 else (midpoint - x0) / (x1 - x0)
+
+        # draw the label centered, size 25, using axes coords (no weird DPI explosions)
+        is_last = (i == len(bound_times) - 1) or (i == len(new_bound_segs) - 1)
+        if i < len(bound_times) - 1: ax.axvline(end, color='white', linewidth=1.0, alpha=1.0)
+
+        if not is_last:
+            ax.text(
+                x_frac, 0.5,
+                f"{new_bound_segs[i]}",
+                rotation=0,
+                ha='center', va='center',
+                fontsize=20, color='Black', weight='normal',
+                transform=ax.transAxes,   # both x and y are 0..1 axes fractions
+                clip_on=False
+            )
+
+    # beat grid
+    # for i, bt in enumerate(beat_times):
+    #     ax.axvline(x=bt, color="#FFFFFF", linestyle='-', linewidth=0.5, alpha=0.9)
+
     ax.set_xlim(0, total_duration)
+    ax.set_ylabel('Frequency (Hz, log scale)')
+    ax.set_xlabel('Time (s)')
+    # ax.set_title('Diagnostic spectrogram with structural sections')
+    # Bigger tick numbers
     
-    # Replace time ticks with chord ticks
-    if chords and len(chords) > 0:
-        # Clear existing ticks and their labels
-        ax.set_xticks([])
-        ax.set_xticklabels([])
-        
-        # Place ticks at chord positions
-        chord_positions = [chord['beat_start'] for chord in chords]
-        chord_labels = [chord['functional_harmony']['functional'] for chord in chords]
-        
-        # Set new ticks and their labels
-        ax.set_xticks(chord_positions)
-        ax.set_xticklabels(chord_labels, rotation=90, fontsize=10)
-        
-        # Make sure tick labels are visible
-        for tick in ax.get_xticklabels():
-            tick.set_verticalalignment('top')
-    
-    # Set axis labels and title
-    ax.set_ylabel('Amplitude')
-    ax.set_xlabel('')  # No x-label needed since chords are the labels
-    title = 'Audio Waveform with Structural Analysis'
-    if beat_offset != 0:
-        title += f' (Beat Offset: {beat_offset:.3f}s)'
-    ax.set_title(title)
-    
-    # Display diagnostic information if requested
-    if diagnostic:
-        avg_beat_interval = np.mean(np.diff(adjusted_beats)) if len(adjusted_beats) > 1 else 0
-        tempo = 60 / avg_beat_interval if avg_beat_interval > 0 else 0
-        
-        diagnostic_text = (
-            f"Diagnostics:\n"
-            f"• Audio duration: {total_duration:.2f}s\n"
-            f"• Sample rate: {sr} Hz\n"
-            f"• Beat count: {len(beats)}\n"
-            f"• Avg beat interval: {avg_beat_interval:.3f}s\n"
-            f"• Estimated tempo: {tempo:.1f} BPM\n"
-            f"• Beat offset applied: {beat_offset:.3f}s"
-        )
-        
-        fig.text(0.98, 0.98, diagnostic_text, fontsize=9,
-                 verticalalignment='top', horizontalalignment='right',
-                 bbox=dict(boxstyle='round,pad=0.5', fc='white', ec='gray', alpha=0.8))
-    
-    # Add extra space at bottom for the rotated chord labels
-    plt.subplots_adjust(bottom=0.15)
+    text_size = 25
+    ax.tick_params(axis='both', which='major', labelsize=22, length=6, width=1.2)
+    ax.tick_params(axis='both', which='minor', labelsize=20, length=3, width=1.0)
+
+    ax.set_xlabel(ax.get_xlabel(), fontsize=text_size)
+    ax.set_ylabel(ax.get_ylabel(), fontsize=text_size)
+    ax.set_title(ax.get_title(), fontsize=text_size)
+
     plt.tight_layout()
     plt.show()
-    
     return fig
+
+
 
 #--------------------------------------------------------------------------------
 def plotChordsBars(chords, bars, bound_frames, bound_segs, size_x=40, size_y=5):

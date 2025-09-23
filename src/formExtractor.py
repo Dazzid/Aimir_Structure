@@ -17,6 +17,7 @@ from sklearn.cluster import SpectralClustering
 from scipy.ndimage import median_filter
 from sklearn.cluster import AgglomerativeClustering
 
+
 # Define the ChordChange class
 class ChordChange:
     def __init__(self, chord, timestamp):
@@ -132,167 +133,194 @@ class formExtractor():
         return Csync, beats, beat_times
     
     #-------------------------------------------------------
-    def laplacian_2(self, y, sr, C, Csync, beats, beat_times, K, plot_it=False, threshold=0.0, min_duration=5.0):
-        # Let's build a weighted recurrence matrix using beat-synchronous CQT (Equation 1)
-        # width=3 prevents links within the same bar; mode='affinity' implements S_rep (after Eq. 8)
+    def laplacian_2(self, y, sr, C, Csync, beats, beat_times, K, plot_it=False, threshold=0.0, min_duration=5.0, colorformat="Blues"):
+        import matplotlib.colors as mcolors
+        import matplotlib as mpl
+
+        original = plt.get_cmap(colorformat)
+
+        def brighten_colormap(cmap, brightness=0.3):
+            colors = cmap(np.linspace(0, 1, 512))
+            hsv = mcolors.rgb_to_hsv(colors[:, :3])
+            hsv[:, 2] = np.clip(hsv[:, 2] + brightness, 0, 1)
+            rgb = mcolors.hsv_to_rgb(hsv)
+            return mcolors.ListedColormap(rgb)
+
+        bright_cmap = brighten_colormap(original, brightness=0.2)
+
+        # Weighted recurrence from beat-sync CQT
         R = librosa.segment.recurrence_matrix(Csync, width=3, mode='affinity', sym=True)
 
-        # Apply a threshold to eliminate weak similarities in R
+        # Threshold weak similarities
         print(f'Threshold: {threshold}')
         R[R < threshold] = 0
 
-        # Enhance diagonals with a median filter (Equation 2)
+        # Enhance diagonals
         df = librosa.segment.timelag_filter(scipy.ndimage.median_filter)
         Rf = df(R, size=(1, 7))
 
-        # Build the sequence matrix using MFCC similarity
+        # Sequence matrix from MFCC
         mfcc = librosa.feature.mfcc(y=y, sr=sr)
         Msync = librosa.util.sync(mfcc, beats)
 
         path_distance = np.sum(np.diff(Msync, axis=1)**2, axis=0)
-        sigma = np.median(path_distance)
+        sigma = np.median(path_distance) if np.median(path_distance) > 0 else 1.0
         path_sim = np.exp(-path_distance / sigma)
-
         R_path = np.diag(path_sim, k=1) + np.diag(path_sim, k=-1)
 
-        # Compute the balanced combination
+        # Balanced combination
         deg_path = np.sum(R_path, axis=1)
         deg_rec = np.sum(Rf, axis=1)
-
         mu = deg_path.dot(deg_path + deg_rec) / np.sum((deg_path + deg_rec)**2)
-
         A = mu * Rf + (1 - mu) * R_path
 
-        # Apply a threshold to eliminate weak similarities in A
-        A[A < threshold] = 0
-
-        # Plot the resulting graphs (Figure 1, left and center)
         if plot_it:
-            fig, ax = plt.subplots(ncols=3, sharex=True, sharey=True, figsize=(12, 4))
-            librosa.display.specshow(Rf, cmap='coolwarm', y_axis='time', x_axis='s',
-                                    y_coords=beat_times, x_coords=beat_times, ax=ax[0])
-            ax[0].set(title='Recurrence similarity')
-            ax[0].label_outer()
+            use_bw = True  # set False to use your bright_cmap
+            paper_cmap = plt.get_cmap('Greys') if use_bw else bright_cmap
 
-            librosa.display.specshow(R_path, cmap='coolwarm', y_axis='time', x_axis='s',
-                                    y_coords=beat_times, x_coords=beat_times, ax=ax[1])
-            ax[1].set(title='Path similarity')
-            ax[1].label_outer()
+            # optional: cap extremes to improve contrast on paper
+            vmax_Rf     = np.percentile(Rf, 99)
+            vmax_R_path = np.percentile(R_path[R_path > 0], 99) if np.any(R_path > 0) else None
+            vmax_A      = np.percentile(A, 99)
 
-            librosa.display.specshow(A, cmap='coolwarm', y_axis='time', x_axis='s',
-                                    y_coords=beat_times, x_coords=beat_times, ax=ax[2])
-            ax[2].set(title='Combined graph')
-            ax[2].label_outer()
+            fig, ax = plt.subplots(ncols=3, sharex=True, sharey=False, figsize=(12, 4))
+
+            librosa.display.specshow(
+                Rf, cmap=paper_cmap, y_axis='time', x_axis='s',
+                y_coords=beat_times, x_coords=beat_times, ax=ax[0],
+                vmin=0, vmax=vmax_Rf
+            )
+            ax[0].set_title('Recurrence matrix $R$'); ax[0].label_outer()
+
+            librosa.display.specshow(
+                R_path, cmap=paper_cmap, y_axis='time', x_axis='s',
+                y_coords=beat_times, x_coords=beat_times, ax=ax[1],
+                vmin=0, vmax=vmax_R_path
+            )
+            ax[1].set_title('Path similarity'); ax[1].label_outer()
+
+            librosa.display.specshow(
+                A, cmap=paper_cmap, y_axis='time', x_axis='s',
+                y_coords=beat_times, x_coords=beat_times, ax=ax[2],
+                vmin=0, vmax=vmax_A
+            )
+            ax[2].set_title('Affinity matrix $A$'); ax[2].label_outer()
             plt.show()
 
-        # Now let's compute the normalized Laplacian (Eq. 10)
+        # Normalized Laplacian and spectral decomposition
         L = scipy.sparse.csgraph.laplacian(A, normed=True)
-
-        # and its spectral decomposition
         evals, evecs = scipy.linalg.eigh(L)
 
-        # We can clean this up further with a median filter.
-        # This can help smooth over small discontinuities
+        # Smooth small discontinuities
         evecs = scipy.ndimage.median_filter(evecs, size=(9, 1))
 
-        # Cumulative normalization is needed for symmetric normalized Laplacian eigenvectors
         Cnorm = np.cumsum(evecs**2, axis=1)**0.5
-
-        # If we want k clusters, use the first k normalized eigenvectors.
         k = K
         X = evecs[:, :k] / Cnorm[:, k-1:k]
-
-        # Check for NaN or infinite values in X and clean them
         if np.isnan(X).any() or np.isinf(X).any():
             X = np.nan_to_num(X)
 
-        # Let's use these k components to cluster beats into segments (Algorithm 1)
+        # Cluster beats into k segments
         KM = KMeans(n_clusters=k, n_init=10)
-        seg_ids = KM.fit_predict(X)
+        seg_ids = KM.fit_predict(X)  # 0..k-1 integers
+
+        # Prepare a discrete colormap and norm that are used everywhere for labels
+        # Using evenly spaced samples avoids extreme ends of the palette
+        label_cmap = mcolors.ListedColormap(bright_cmap(np.linspace(0.08, 0.92, k)))
+        label_bounds = np.arange(-0.5, k + 0.5, 1)
+        label_norm = mcolors.BoundaryNorm(label_bounds, label_cmap.N)
+        label_colors_list = [label_cmap(i) for i in range(k)]  # for direct indexing
 
         if plot_it:
-            # Plot the structure components and estimated labels
-            fig, ax = plt.subplots(ncols=2, sharey=True, figsize=(10, 4))
-            colors = plt.get_cmap('coolwarm', k)
+            import matplotlib.colors as mcolors
 
-            librosa.display.specshow(X, y_axis='time', y_coords=beat_times, ax=ax[0])
-            ax[0].set(title='Structure components')
+            # Standardize each component to make variation visible
+            X_plot = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-8)
 
-            # Prepare the segmentation labels for plotting
-            img = ax[1].imshow(seg_ids[np.newaxis, :], aspect='auto', cmap=colors,
-                            extent=[beat_times[0], beat_times[-1], 0, 1])
+            # Symmetric norm around zero
+            norm = mcolors.TwoSlopeNorm(vmin=X_plot.min(), vcenter=0.0, vmax=X_plot.max())
+
+            fig, ax = plt.subplots(ncols=2, sharey=False, figsize=(8, 3))
+
+            # Use the same brightened colormap derived from `colorformat`
+            librosa.display.specshow(
+                X_plot.T,
+                x_axis='time',
+                cmap=bright_cmap,        # <- now uses your brightened map
+                norm=norm,
+                x_coords=beat_times,
+                ax=ax[0]
+            )
+            ax[0].set(title='Eigenvector of $L$', ylabel='Component')
+            ax[0].set_yticks(range(K))
+            ax[0].set_yticklabels([f'c{i}' for i in range(K)])
+
+            # Discrete labels panel, unchanged, also derived from bright_cmap
+            im = ax[1].imshow(
+                seg_ids[np.newaxis, :],
+                aspect='auto',
+                cmap=label_cmap,
+                norm=label_norm,
+                extent=[beat_times[0], beat_times[-1], 0, 1],
+                interpolation='nearest'
+            )
             ax[1].set(title='Estimated labels before merging')
             ax[1].set_yticks([])
             ax[1].set_xlabel('Time (s)')
-            fig.colorbar(img, ax=[ax[1]], ticks=range(k))
+            cbar = fig.colorbar(
+                mpl.cm.ScalarMappable(norm=label_norm, cmap=label_cmap),
+                ax=ax[1], ticks=np.arange(0, K, 1)
+            )
+            cbar.ax.set_ylabel('Label id')
+
             plt.show()
 
-        # Define the sections
+        # Boundaries where label changes
         bound_beats = 1 + np.flatnonzero(seg_ids[:-1] != seg_ids[1:])
-
-        # Include beat 0 as a boundary
         bound_beats = np.concatenate(([0], bound_beats))
-
-        # Ensure bound_beats are within valid range
         bound_beats = librosa.util.fix_frames(bound_beats, x_min=0, x_max=len(beats)-1, pad=False)
 
-        # Compute the segment label for each boundary
         bound_segments = seg_ids[bound_beats]
-
-        # Convert beat indices to frames
         bound_frames = beats[bound_beats]
 
-        # Get the total duration of the song
         total_duration = librosa.get_duration(y=y, sr=sr)
 
-        # Ensure that bound_times includes the end of the song
         bound_times = librosa.frames_to_time(bound_frames, sr=sr)
         if bound_times[-1] < total_duration:
             bound_times = np.append(bound_times, total_duration)
             bound_frames = np.append(bound_frames, C.shape[1] - 1)
             bound_segments = np.append(bound_segments, bound_segments[-1])
 
-        # Implement Minimum Duration Threshold
+        # Minimum duration merging
         new_bound_frames = [bound_frames[0]]
-        new_bound_segments = [bound_segments[0]]
+        new_bound_segments = [int(bound_segments[0])]
 
         for i in range(1, len(bound_frames)):
-            # Calculate the duration of the current segment
             duration = bound_times[i] - bound_times[i - 1]
             if duration < min_duration:
-                # Merge with the previous segment by not adding a new boundary
-                #print(f"Merging segment {i} (duration {duration:.2f}s) with previous segment.")
                 continue
-            else:
-                # Keep the boundary
-                new_bound_frames.append(bound_frames[i])
-                new_bound_segments.append(bound_segments[i])
+            new_bound_frames.append(int(bound_frames[i]))
+            new_bound_segments.append(int(bound_segments[i]))
 
-        # Identify unique labels in the order they first appear
-        unique_labels = []
-        for label in new_bound_segments:
-            if label not in unique_labels:
-                unique_labels.append(label)
+        # Optional human-friendly relabeling for the return value, starting at 1
+        unique_labels_in_order = []
+        for lab in new_bound_segments:
+            if lab not in unique_labels_in_order:
+                unique_labels_in_order.append(lab)
+        label_mapping = {old: new for new, old in enumerate(unique_labels_in_order, start=1)}
+        final_bound_segments_numbers = [label_mapping[lab] for lab in new_bound_segments]
 
-        # Create a mapping from old labels to new labels starting from 1
-        label_mapping = {old_label: new_label for new_label, old_label in enumerate(unique_labels, start=1)}
-
-        # Apply the mapping to new_bound_segments to generate final_bound_segments
-        final_bound_segments = [label_mapping[label] for label in new_bound_segments]
-
-        # Plot the final segmentation result
+        # Final segmentation plot using the original cluster ids for color consistency
         if plot_it:
             fig, ax = plt.subplots(figsize=(12, 2))
-            colors = plt.get_cmap('coolwarm', len(unique_labels) + 1)
-
-            # Create arrays of segment starts and ends
             segment_starts = librosa.frames_to_time(new_bound_frames, sr=sr)
             segment_ends = np.append(segment_starts[1:], total_duration)
 
-            # Plot each segment as a horizontal bar
             for i, (start, end) in enumerate(zip(segment_starts, segment_ends)):
+                lab = new_bound_segments[i]            # original id in 0..k-1
+                color = label_colors_list[lab]         # same color as in the first label plot
                 ax.broken_barh([(start, end - start)], (0, 1),
-                            facecolors=colors(final_bound_segments[i]), edgecolors='black')
+                            facecolors=color, edgecolors='black')
 
             ax.set_xlim([0, total_duration])
             ax.set_yticks([])
@@ -300,7 +328,14 @@ class formExtractor():
             ax.set_title('Final Segmentation after Merging')
             plt.show()
 
-        return np.array(new_bound_frames), final_bound_segments
+        aux = {
+            "label_colors": label_colors_list,        # list of RGBA, indexed by original id 0..K-1
+            "segment_color_ids": new_bound_segments,  # per-segment original ids 0..K-1, in order
+            "K": K,
+            "colorformat": colorformat
+        }
+        return np.array(new_bound_frames), final_bound_segments_numbers, aux
+
     
     #-------------------------------------------------------
     #Calculate the recurrence matrix
@@ -683,7 +718,7 @@ class formExtractor():
         return aligned_bars
 
     #--------------------------------------------------------
-    def optimize_song_structure(self, song, chords, beats_reference, K=4, min_duration=3.5, plot_it=False):
+    def optimize_song_structure(self, song, chords, beats_reference, K=4, min_duration=3.5, plot_it=False, colorformat="Blues"):
         """
         Performs the complete analysis pipeline:
         1. Load audio data 
@@ -714,9 +749,10 @@ class formExtractor():
         Csync, beats, beat_times = self.sync(self.y, self.sr, C)
         
         # 3. Extract segmentation using Laplacian method
-        bound_frames, bound_segments = self.laplacian_2(
+        bound_frames, bound_segments, aux = self.laplacian_2(
             self.y, self.sr, C, Csync, beats, beat_times, 
-            K=K, plot_it=plot_it, min_duration=min_duration
+            K=K, plot_it=plot_it, min_duration=min_duration,
+            colorformat=colorformat
         )
         
         # 4. Convert bound_frames to time for alignment
@@ -735,4 +771,4 @@ class formExtractor():
             bound_segments,
         )
         
-        return data_dict
+        return data_dict, aux
