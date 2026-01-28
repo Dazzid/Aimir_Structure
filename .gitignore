@@ -20,3 +20,5 @@ src/logs/
 
 dataset/
 ngram_datasets/
+
+consonance-ACE/
