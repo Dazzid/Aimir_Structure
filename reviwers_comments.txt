@@ -1,0 +1,299 @@
+Dear David Dalmazzo, Laura Cros Vila, Luca Casini, Bob L.T. Sturm,
+After review, we have reached a decision regarding your submission to Transactions of the International Society for Music Information Retrieval, " Data-Driven Analysis of Musical Form and Harmonic Structure in AI-Generated Popular Music: A Case Study with Suno and Udio ". Our decision is to request revisions of the manuscript. These revisions may then undergo further peer review prior to acceptance.
+Please could you have the revisions submitted by March 10, 2026. If you cannot make this deadline, please let us know as early as possible.
+Please find the reviews for your manuscript at the bottom of this email. For accessing additional files that reviewers may have uploaded, please log into the submission system and view your review data, where the file will be available to download.
+A summary of the requested edits from the editorial team can be found below. Pleaseconsider these points and revise the file accordingly:
+==================================
+
+Comments by Metareview: 
+All the reviewers acknowledge the paper's contribution in presenting the musicological analysis on a large corpus of AI-generated music. Four reviewers have provided valuable feedback that would help authors improve the manuscript for revision.
+ 
+Among other points, I would like to emphasize the most critical one: the paper surprisingly misses most of the recent advances in ACE or music structure analysis, which could be very helpful for making automatic analysis more accurate. This not only represents a weakness in the literature review, but also raises the question of whether the proposed novel ACE pipeline was actually needed. Furthermore, the accuracy or validity of the proposed pipeline is under question, as the evaluation result seems weak compared to other recent results, even though they are not directly comparable.
+ 
+Therefore, I expect the revision to include a thorough review of ACE and structure analysis, with a proper justification for their selection based on a fair, well-founded comparison, in line with recent literature in the MIR field. 
+ 
+If the proposed novel pipeline does not offer advantages over existing methods (or at least comparable performance), I suggest updating the entire analysis using results from a more appropriate method.
+I guess incorporating automatic structure analysis with semantic label can also address issues raised by Reviewer I, but this would broaden the scope of paper too much.
+ 
+I acknowledge that the current analysis result provides its own insights, even though the automatic analysis may contain more errors than results from SOTA methods. However, given the standards of TISMIR, I believe the article needs both stronger justification for selecting each MIR method and assurance that the chosen methods appropriately incorporate recent advances in the field.
+ 
+In addition to the other works proposed by reviewers, I suggest referring to a recent study that directly extracts Roman numeral analysis results from polyphonic audio. The paper also provides the code and a pre-trained model, although building a pipeline to extract audio features and run the model will require additional work.
+ 
+- Thiago Poppe, Luisa Lopes, and Flavio Figueiredo. 2025. The Polyphonic Audio to Roman Corpus. In Proceedings of the 12th International Conference on Digital Libraries for Musicology (DLfM '25). Association for Computing Machinery, New York, NY, USA, 72–80. https://doi.org/10.1145/3748336.3748345
+==================================
+
+ Apart from revising your manuscript based on the reviewers' feedback, we also require you to write a response to the reviewers, explaining how you have addressed their comments. In your response letter, please provide a point-by-point reply to all questions and concerns raised by the reviewers. Furthermore, in the revised version, please highlight the changes you have made compared to the original submission.
+You must upload your revised files and the response as follows:
+1) login to the journal account with your username and password
+ 2) access ‘My Queue’ and click ‘View’ for the submission in question
+ 3) click ‘Upload File’, within the Revisions section
+ 4) (a pop-up window will display) Select the article component you are uploading (e.g. manuscript, figure etc) and then either drag your file into the displayed area or click ‘Upload file’ to select it from your files. When done click ‘Continue’
+ 5) check the file name is appropriate (edit it here if not) and then click ‘Continue’
+ 6) if you wish to upload another revised file, click ‘Add another file’, otherwise, click ‘Complete’
+If you need to upload more files, repeat steps 3-6.
+When uploading your feedback to the peer review comments, please ensure that the article component ‘Response to Reviewers’ is selected.
+If you have trouble processing the revisions, our Help Center (https://help.u-community.io) or downloadable PDF (https://bit.ly/Author-Guide-OJS-3) may be able to help. If not, please get in touch and we’ll be happy to help.
+Please ensure that your revised files adhere to our author guidelines, and that the files are fully copyedited/proofed prior to upload, including the reference list. If you are not confident that the language quality is high enough, you may wish to consider using the following (free!) authoring tools:
+ - Spelling & grammar checks: https://www.grammarly.com - and also - http://spellcheckplus.com
+There are also many professional copyediting services that you could consider. If you would like your article to be professionally copyedited, by native English speakers, you can find a list of professional, independent copyeditors in the directory of editorial services at CIEP (Chartered Institute of Editing and Proofreading), see - https://www.ciep.uk/directory/
+Please also ensure that all copyright permissions have been attained. This is the last opportunity for major editing, therefore please fully check your file prior to re-submission.
+If you have any questions or difficulties during this process, please do contact us.
+
+ Kind regards,
+ Meinard Mueller
+ 
+If external review was obtained, the comments from the reviewers are below:
+Reviewer 1:
+ Recommendation: Resubmit for Review
+1. Originality:
+Highly original
+Comments/Explanation:
+I rate the originality of this submission as high. To my knowledge, this article is the first to compare AI- and human-generated songs as audio signals (rather than symbolic representations) using standard MIR tools in the context of computational musicology. It is a novel perspective to treat AI-generated songs as standard inputs for audio analysis (also due to the recent progress in the audio quality of automatic generation systems).
+ I liked the idea of comparing harmony and structure between the three datasets to reveal systemic differences and analyze them.
+ By employing a massive dataset (60k examples), the research is situated in a systematic/statistical domain, thereby overcoming the potential subjectivity and bias inherent in analyzing a few isolated examples.
+2. Previous work:
+Low
+Comments/Explanation:
+Rather than "Low", I would more accurately evaluate this section as "unbalanced": While Section 2.4 (Automatic Chord Estimation - ACE) is extensive (occupying nearly half the background section) and appears rigorous (as a non-expert in ACE, I cannot rigorously evaluate this subsection), the remaining sections suffer from a lack of organization and a reliance on outdated literature.
+ - Section 2.1 is poorly organized in my opinion, and mixes several different literatures. I recommend restructuring this into mutually exclusive subsections, for instance (in order of appearance) "text-conditioned music synthesis", "Human evaluation of AI-generated music", and "Harmony analysis of large-scale corpora". Additional models could also be referenced in this section (e.g., StableAudioOpen).
+ - Section 2.2 tackles Automatic Beat Detection. Surprisingly, no algorithms published after 2016 are mentioned, while the research continued (e.g., [1], published in 2024, among others). I would like to understand why the authors do not mention more recent papers. In addition, the authors say that "robust beat tracking [...] remains an open problem, particularly for songs that are predominantly voice". While I agree with this statement, the reference is too old (2016) to assess the quality of such systems nowadays rigorously. In particular, I found a recent article [2] (2023) on the subject (voice beat estimation), suggesting that models have improved.
+ - Section 2.3 tackles Music Structure Analysis, which is my main field of expertise. Once again, I don't understand why authors don't mention algorithms from articles more recent than 2014. At the very least, the authors should mention the 2020 field review [3]. Many more recent articles could also be mentioned, for instance [4-7] (not exhaustive).
+ In addition, in Section 6.2, the authors say that "it is not yet possible to define semantic representations like 'intro' [...]". While this is true with the method chosen by the authors, automatic methods exist, e.g., [5]. Hence, the phrasing is, at best, misleading and, at worst, factually false.
+
+ I would recommend that the authors strengthen that section.
+
+ References
+ ---------------
+ [1] Foscarin, F., Schlüter, J., & Widmer, G. (2024). Beat this! Accurate beat tracking without DBN postprocessing. 25th International Society for Music Information Retrieval Conference (ISMIR), 2024. Can be found at https://arxiv.org/pdf/2407.21658.
+ [2] Heydari, M., Wang, J. C., & Duan, Z. (2023). Singnet: a real-time singing voice beat and downbeat tracking system. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE.
+ [3] Nieto, O. et al. (2020). Audio-based music structure analysis: Current trends, open challenges, and applications. Transactions of the International Society for Music Information Retrieval, 3(1).
+ [4] Salamon, J., Nieto, O., & Bryan, N. J. (2021). Deep Embeddings and Section Fusion Improve Music Segmentation. In ISMIR (pp. 594-601).
+ [5] Wang, J. C., Hung, Y. N., & Smith, J. B. (2022). To catch a chorus, verse, intro, or anything else: Analyzing a song with structural functions. In ICASSP 2022-2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) (pp. 416-420). IEEE.
+ [6] Marmoret, A., Cohen, J.E., and Bimbot, F. (2023). Barwise Music Structure Analysis with the Correlation Block-Matching Segmentation Algorithm, Transactions of the International Society for Music Information Retrieval, 6(1).
+ [7] Buisson, M., Mcfee, B., & Essid, S. (2024). Using Pairwise Link Prediction and Graph Attention Networks for Music Structure Analysis. In International Society for Music Information Retrieval (ISMIR).
+3. Methodology:
+Weak methodology
+Comments/Explanation:
+While the authors must be commended for the engineering effort required to process 60k tracks, I find the methodology, as currently presented, inappropriate for supporting the paper's central claims. The study 1) does not motivate properly nor validate the ACE and structure analysis algorithms, and 2) may suffer from a fundamental selection bias in the dataset construction.
+
+ 1) The authors insist on developing their own ACE pipeline, but I don't find their justification convincing. The authors first motivate their custom algorithm at the end of Section 2.4 (p. 3) by pinpointing existing problems (NB: citing an almost decade-old reference (2016)): "sensitive to training data, genre, and annotation conventions". Still, they do not explain how they would address them. Then, the authors mention that "most of the methods found in the literature are discontinued or deprecated" (Section 4.2, p.5). While I acknowledge that deprecation or discontinuation is a valid problem in MIR (and many other computer science-related research domains), I find it very hard to believe that no algorithm is available nowadays, especially given the dedication to open science in MIR. Nonetheless, I acknowledge that, as a non-expert in the field, a "belief" is not a valid argument, and I will then accept this premise.
+ Accepting the need for the development of a custom ACE algorithm, I still find the experimental validation of the custom ACE algorithm unconvincing. The ACE algorithm is validated on only 83 songs from iReal Pro. For a study drawing statistical conclusions from 60k tracks, this sample size is insufficient; other, larger datasets should have been used. Furthermore, the custom pipeline is compared against a weak "Triad Extractor" baseline from Librosa. A proper methodological validation would benchmark the custom pipeline against a modern, State-of-the-Art ACE model. Alternatively, the authors should apply the pipeline to a publicly available dataset used in recent studies and compare their results to the published performance figures.
+
+ Additionally, the omission of recent (deep learning) approaches to structure analysis undermines the justification for the chosen music structure analysis algorithm ("Laplacian segmentation technique"). In particular, authors should consider using "semantic" structure analysis algorithms, i.e. algorithms able to label sections as "verse", "chorus", "bridge", etc (see [5] from 2. Previous work).
+
+ It is particularly frustrating given the fact that the core outcome of the article is not about developing a new automatic method, but about using any algorithm (arguably, the best one) for an end task (here, harmony and, to a lesser extent, structure analysis). I suggest that the authors do the same evaluation, but using State-of-the-Art algorithms.
+
+ 2) From what I understand:
+ - The Suno tracks are scraped from the "New Songs" playlist;
+ - The Udio tracks "selected based on popularity".
+ If I'm correct, it means the Suno tracks are sampled from an unfiltered stream of user generations, while the Udio tracks are filtered by human evaluation (here, popularity measured by plays in the Udio interface by Udio users). This leads to a massive selection bias, where the Udio tracks are likely to be of better quality (at least, more pleasant for the end users) than the Suno ones, which are sampled at random.
+ To make a valid comparison, the authors must sample both platforms using identical criteria (either both "New/Random" or both "Popular"). As such, I fear that this selection bias may represent a confusion factor in the explanation of the results (in particular given the fact that Udio songs are considered more diverse and closer to human music than Suno songs), and may bias the whole study.
+4. Clarity:
+Somewhat clear
+Comments/Explanation:
+Overall, I found the paper to be well-written and easy to understand. It is also written in proper English.
+
+ However, I have several concerns regarding the structure and content of the paper.
+ Regarding its structure:
+ - Section 2.1 could be better organized (see "2. Previous Work")
+ - Section 4. (method) should not contain a subsection for experimental validation (Section 4.4 Measuring Chord Estimation Quality). It should be placed elsewhere, after the presentation of the methodology. Additionally, it should contain experimental validation for the structure analysis algorithm (see 3. Methodology).
+
+ Regarding its content:
+ - Table 3. is referenced in page 6., and is displayed in page 12, which make it hard to read.
+ - A lot of figures are referenced in page 7 (Fig 2 to 8), making it difficult to compare the figures with the text descriptions. Authors should consider spacing their references to figures, and detailing more each one when it is introduced.
+ - Section 4.1 should explicitly differentiate what was proposed in the original publication (McFee et al. 2014) and what is adapted for the current context by the authors. As it is, it seems to me that most of the details follow what was proposed in (McFee et al. 2014) while this is not mentioned.
+ - Several references to "self-similarity matrix" (the tool) should instead reference "Structural Segmentation" or "Music Structure Analysis" (the task), e.g., title of Subsections 4.1 and 6.2.
+
+ In addition, I have a concern about one of the contributions mentioned by the authors. The authors frame a central research question around the capability of MIR tools to scrutinize AI-generated music (Section 6, p.10), subsequently claiming in Section 6.1 that their investigation "reveals fundamental limitations in off-the-shelf MIR tools".
+ I find this statement to be unsubstantiated given the experimental design. The authors do not demonstrate these "fundamental limitations" through a rigorous benchmark of State-of-the-Art "off-the-shelf" tools (especially considering that most recent algorithms are not referenced). Furthermore, the proposed solution (the custom ACE pipeline) is weakly validated. As detailed in my comments on Section "3. Methodology" of this review, the custom ACE pipeline is validated on a limited set of samples (only 83 songs) and is compared against a weak baseline, while the structural analysis algorithm is neither motivated against recent literature nor quantitatively evaluated. Consequently, the narrative that the paper identifies and overcomes specific limitations in standard MIR tools is not supported by the data. This positioning appears inaccurate and potentially misleading.
+5. Reproducibility:
+The review process is double-blind, hence I cannot reproduce the results. However, the authors say that they will release the annotations and the complete code in open-source (Section 1, p.2), suggesting a high level of reproducibility.
+6. Overall value:
+Medium low
+Comments/Explanation:
+- Summary of Contributions:
+ The authors present a large-scale, data-driven comparative analysis of 60k audio tracks, balanced across three sources: AI-generated music from Suno, AI-generated music from Udio, and human-composed music from the Million Song Dataset. The study aims to quantify "algorithmic monoculture" by analyzing harmonic vocabulary, chord progressions, and structural forms. To achieve this, the authors developed a custom feature extraction pipeline (source separation, transcription, structure analysis, beat detection, and chord estimation), and systematically evaluate differences between the three datasets. The paper concludes that human-composed music lies, in terms of harmonic and structure diversity, between the Suno dataset (worst one in terms of diversity) and the Udio (vest one in terms of diversity).
+
+ - Strengths:
+ The primary strength of this work lies in its novelty and scale. MIR and computational musicology analysis of AI-generated music (audio signals) is now possible given the state of automatic generation models, and this study aims at answering an important aspect of these models: To what extent are the outputs of automatic generation models diverse in terms of harmony and structure, in particular compared to human music? I found this research question to be fascinating and very timely. The decision to analyze a massive corpus (60k tracks) rather than relying on anecdotal evidence allows for a robust statistical discussion regarding the output diversity of generative models. The findings regarding harmonic homogenization in Suno (specifically the prevalence of canonical pop progressions) may potentially be significant for the field of computational musicology.
+
+ - Weaknesses:
+ However, the validity of these findings is currently compromised by significant methodological flaws:
+ -- Outdated Methodology & Literature: The analysis relies on old signal processing techniques (e.g., Laplacian segmentation from 2014) while ignoring a decade of progress in Deep Learning-based Music Structure Analysis, Beat Tracking and Automatic Chord Estimation (ACE). This omission leads to factually incorrect claims in the discussion regarding the capabilities of current MIR tools (e.g., the feasibility of semantic segmentation).
+ -- Weak Validation: The custom tools used to annotate the harmony and structure of the datasets are not sufficiently validated. The ACE pipeline is tested on a relatively small dataset (83 tracks) and against a weak baseline, while the structural analysis pipeline is not validated at all. Without evidence that these tools perform reliably on AI-generated audio (or even audio), the statistical conclusions drawn from them remain unfounded.
+ -- Selection Bias: The sampling criteria for the AI datasets are inconsistent (Suno tracks appear to be random/new, while Udio tracks are selected by popularity). This introduces a confounding variable that may invalidate the statistical comparison between the three datasets (and platforms).
+
+ - Conclusion:
+ This paper addresses a very interesting and timely topic, but the execution suffers from a lack of rigorous validation and a biased experimental design. The research questions are valuable, but the methodology must be strengthened to support the claims. I recommend Major Revisions, specifically requiring the authors to: (1) harmonize the sampling criteria to remove selection bias, (2) update the literature review to reflect the current State-of-the-Art, and (3) rigorously benchmark their analysis pipeline against modern algorithms (alternatively: replace their custom tools by State-of-the-Art algorithms whenever this is possible).
+
+ Minor remarks:
+ - Section 3 is not mentioned in the end of the introduction.
+ - Figures 2/3/4 should be merged in one figure, using the subcaption latex package for instance (ex of use: https://www.overleaf.com/learn/latex/Positioning_images_and_tables)
+ - Many citations are formatted as "Authors (date)" instead of "(Authors, date)" (i.e. using \cite{} instead of \citep{} in the TISMIR latex template). I will not make an exhaustive list; instead here is one of the first examples (Section 2.1, p.2): "e.g., MusicGen Copet et al. (2023) and MusicLM Agostinelli et al. (2023)".
+ - Page 4, lines 288 and 291: the referenced sections (2.3 and 2.4) are not correct, probably because of the use of a same label for different sections.
+7. Ethical approval:
+N/A.
+8. Other Comments:
+ 
+Reviewer 2:
+ Recommendation: Resubmit for Review
+1. Originality:
+Somewhat original
+Comments/Explanation:
+This paper compares AI-generated and human-composed pop music from two perspectives: structure and harmony. I think it is original in that:
+ - It is a large-scale analysis, involving 40k AI-generated songs and 20K human-composed songs. It focuses music generated by on commercially successful platforms, which are the most mature AI-generations till now (despite the questionable legality).
+ - It considers the structure of the songs, which is an important element in pop songs, but is often under-explored when evaluating AI-generated songs. Previous work usually depends on human rating to evaluate the structuredness, but this paper uses a scalable MIR tool.
+ - It could provide standard perspectives to evaluate generative models in the future.
+ The originality is limited in that:
+ - It is a direct application of evaluation techniques for music generation, just using different data.
+ Besides that, I still consider this paper moderately original.
+2. Previous work:
+Low
+Comments/Explanation:
+- The paper is closely related to evaluation of AI-generated music, where AI-generated music is compared to human-composed music from different perspectives. However, these methods are not discussed in Section 2.1. For example, [REF-1] defines chord progression irregularity as the percentage of unique chord trigrams and uses it to compare the generated music and human compositions, and it also considers the structuredness difference in generated music and human compositions; [REF-2] uses chord entropy to evaluate music generations; [REF-3] proposes several tonic-based features to evaluate AI-generated music. While not all of the prior work are directly suitable for this paper’s research question, these papers need to be discussed in the background section and it is important to point out the difference between this paper and these prior works.
+ - Section 2.4 reviews the related work on ACE. However, many prior works that are closely related to this paper are missing. The paper claims, in line 185-189 that Chordino is unsupported in Python. However, Chordino can be used in command line (and can also be integrated in Python). See Python (on Windows machine) example in [REF-4]. Line 189-192 claims that recent ACE methods do not provide code. However, there are several open-source implementations, using a CNN+BiGRU model [REF-5], a bi-directional transformer [REF-6], or a CNN+BiLSTM model [REF-7], all of which come with trained models and support chord vocabularies beyond major and minor. These prior works need to be discussed in the paper.
+ - For structure analysis, there also exists some off-the-shelf models like [REF-8], [REF-9] that is deep-learning based and might provide better results than the one used in the paper.
+
+ [REF-1] Wu and Yang, “The Jazz Transformer on the Front Line: Exploring the Shortcomings of AI-composed Music through Quantitative Measures”, in ISMIR, 2020.
+ [REF-2] Wang et. al., “Intelligence Evaluation of Music Composition Based on Music Knowledge”, in ICIC, 2023.
+ [REF-3] Dervakos, et. al., “Heuristics for Evaluation of AI Generated Music”, in ICPR, 2020.
+ [REF-4] https://github.com/ismir-mirex/ace-task-captain-notes?tab=readme-ov-file#baselines Last accessed on Nov. 7, 2025.
+ [REF-5] McFee and Bello, “Structured Training for Large-Vocabulary Chord Recognition”, in ISMIR, 2017. Code available at: https://github.com/bmcfee/ismir2017_chords Last accessed on Nov. 7, 2025.
+ [REF-6] Park et. al., “A Bi-Directional Transformer for Musical Chord Recognition”, in ISMIR 2019. Code available at: https://github.com/jayg996/BTC-ISMIR19 Last accessed on Nov. 7, 2025.
+ [REF-7] Jiang et. al., “Large-Vocabulary Chord Transcription via Chord Structure Decomposition”, in ISMIR, 2019. Code available at: https://github.com/music-x-lab/ISMIR2019-Large-Vocabulary-Chord-Recognition Last accessed on Nov. 7, 2025.
+ [REF-8] Peeters, “Self-Similarity-Based and Novelty-based loss for music structure analysis”, in ISMIR, 2023. Code available at: https://github.com/geoffroypeeters/ssmnet_ISMIR2023/tree/main Last accessed on Nov. 7, 2025.
+ [REF-9] Buisson et. al., “Learning Multi-Level Representations for Hierarchical Music Structure Analysis”, in ISMIR 2022. Code available at: https://github.com/morgan76/HE Last accessed on Nov. 7, 2025.
+3. Methodology:
+Weak methodology
+Comments/Explanation:
+The methods used in the paper is in general appropriate for answering the research question. The extraction of structure and chord information reflects the focus of the research question. However, there are some issues in the specific approaches to extracting structure and chord information, which might result in that the information is not extracted correctly.
+ - It is important to note that during data sampling, Suno data are from “New Songs” while the Udio data are based on popularity. Therefore, compared Suno, the Udio data are a joint result of generative model and user preference. Such difference in data sampling could introduce bias in the data.
+ - Due to the unclarity in Section 4.1 (see comments on Clarity), I am not able to validate the correctness of the structure analysis, but the visualization in Figure 1 suggests that it does provide some meaningful structure information.
+ - Line 417-418: the root of a chord can be different from the bass. For example, C:maj/5 (or C/G, for guitarists) has the root note of C but the bass note of G. In “chordAnalyzer.py” in the provided code, bass note is regarded as the root note (line 596), and other notes are converted to intervals relative to the bass note (line 612). This will not only lead to all inversions being ignored, but also incorrect ACE results.
+ - Section 4.4 describes the evaluation method and section 5.4 shows the results of comparing the customized pipeline with a baseline. However, the dataset is a customized dataset instead of a standard, widely used ACE dataset like Billboard or The Beatles, (which might be acceptable considering the unavailability of the audio in standard datasets). The evaluation metrics is not standard either: the paper used “similarity” which is not clearly defined in the paper, instead of standard metrics like WCSR. Line 474 shows that the evaluation does not require an exact match, but the rules are not explained. For example: if Dm and Dm7 are considered equivalent, are C, C7, and CMaj7 considered equivalent? Such choices make a big different in evaluation but are neither described nor justified. The paper mentions the standard evaluation metrics and their problems in Section 2.4 but does not explain why the paper uses other metrics and how do these metrics solve the problems. The baseline Triad Extractor is unclear due to the missing reference in line 692, and given the numbers in Table 3, I consider it as a weak baseline: 0.535 “similarity” compared to, for example, 0.7211 major/minor accuracy in MIREX 2025 ACE Chordino baseline, on Billboard dataset [REF-9]. Therefore, I am not convinced that the proposed ACE pipeline is better than the currently existing ACE systems, and thus, the motivation of having a new pipeline, as well as the discussions about the current state of ACE in section 6.1, become less valid.
+ To improve the methodology, I would suggest first trying the existing structure analysis and chord recognition models. If the results are really unsatisfying and proposing a new pipeline is inevitable, the paper needs to include a systematic evaluation on the proposed pipeline, showing that it is more suitable for this research question than the existing tools.
+
+ [REF-9] https://music-ir.org/mirex/wiki/2025:Audio_Chord_Estimation_Results, last accessed Nov. 7, 2025.
+4. Clarity:
+Somewhat unclear
+Comments/Explanation:
+- Line 32-45 reads like the abstract rather than the introduction. The introduction to the methods and the pipeline that are later used is too short, and it is hard to understand the general workflow. For example, how are the harmonic information and structure form represented? The motivation of using a customized pipeline is also unclear. The paragraph only mentions that there are many shortcomings in the current approaches without specifying any, It is also not necessary to include the results in an introduction paragraph (as in line 37-45)
+ - Section 2 reviews the background of this paper, which covers several standard MIR tasks. However, many of them are rather less related to the topic of this paper. For example, the review of beat tracking methods and the challenges is not closely related, because this paper is not improving beat tracking, but rather using them as a tool, and in the end, what is used is the librosa function, which is also a quite old and standard approach. (The aim of the background section is not to give a tutorial to MIR tasks, but to provide some necessary foundations for understanding the paper, as well as locating this paper in the literature.)
+ - The whole section 4.1 a bit difficult to understand. All symbols in the equations need to be explained. In equation (2), the subscript f is not introduced. In equation (3) and (4), “I” is not introduced. Line 330 mentions “the path distance” but the path is not introduced either, and it is not a part of the (McFee and Ellis, 2014) paper. Since the method in the paper deviates from the original paper, the paper needs to clearly describe the methodology.
+ - Section 5.1 does a lot of comparisons by genre. However, the research question is centered on harmony instead of genre. Analyzing the genres or discussing how different subsets show different genre distributions do not help address the research question.
+ - Figure 10 and Figure 11 are representing the same content. It’s just the ordering of the pairs are different. These two figures should be combined.
+ - The paper is not well-structured. Section 4 focuses on music analysis pipeline and section 5 presents the results. However, the orders in two sections are different: section 4 starts with structure analysis, then chord detection, but section 5 starts with harmony analysis and then return to structure. At the end of section 5, it again returns to chord detection evaluation. Line 321 mentions the use of beat-synchronous chroma vectors, which requires beat information, but beat detection is not mentioned until line 391, as a subsection of chord detection. While each subsection is self-explanatory, the general flow is rather fragmented.
+5. Reproducibility:
+The paper is good in reproducibility. The code for the analysis is completely available, and the datasets are all public and seem to be available.
+6. Overall value:
+Medium low
+Comments/Explanation:
+The paper considers the research question of whether, and if yes, how, AI-generated pop music is different from those composed by humans. The paper analyzes the differences from two perspectives: harmony and structure. It uses an existing structure analysis method and proposes a new chord recognition pipeline. Results show that Suno music prefers simple structure common chord progressions in Western pop music and Udio music resemble human-composed music.
+
+ While there are some strengths in this paper in terms of the pioneering focus of commercially mature AI-generated songs and the meaningful perspective of harmony and structure, there are still some weaknesses and questions, as specified below:
+ - The paper claims that the current ACE approaches are not able to facilitate this research and therefore designs a new ACE pipeline. However, this claim is not true because several prior works have provided accessible tools (See comments on Previous Work).
+ - Following the previous point, there lacks a systematic comparison between the proposed ACE pipeline and the existing methods. (See comments on Methodology)
+ - Line 446-448: to convert absolute chord labels to roman numerals, it is necessary to know the key of the music. However, this process is not described in the paper.
+ - Line 539: It is hard to draw the conclusion from Figure 5 that the distributions are “equal”. Figure 5 shows absolute numbers of occurrences, which are affected by the length of the songs. Since Udio songs are shorter, it’s clear that the frequencies are lower for Udio dataset, but whether the relative distributions are similar is unclear from the figure. Similar problems apply also to Figure 10 and 11, where the unnormalized absolute numbers are used and Suno shows significantly bigger numbers, making it hard to compare between corpus.
+ - Section 5.3 is on the short side, especially compared to the harmony sections. As a result, some claims are not well-supported by results. For example, in line 647-656, inferring semantic meaning from numbers is only an educated guess. What could be the difference between [2,3] and [4,3]? In line 667, there is no evidence that these conclusions can be drawn from the unique token ratios. Figure 9 has the same problem as figure 10 and 11 of numbers not being normalized, which also makes it difficult to make comparisons.
+ - Section 6.3 has done similar analysis as Section 5.1 and 5.2, but on a tetra-gram level instead of trigram level. It would be clearer if the tetra-gram analysis is formalized and presented as one of the main methods, instead of a separated discussion. In the end, we will be able to see some common canonical progressions like “I-V-vi-IV” here.
+ - Since the chord progression analysis in Section 5.2 involves only roman numerals without seventh (or other extended) chords, an ACE method that extracts only major and minor chords should be sufficient to facilitate this study. Therefore, I am not convinced that an ACE algorithm that deals with large chord vocabulary is necessary to answer the research question, reducing the necessity of using the proposed ACE pipeline.
+ Given these limitations, I would recommend a resubmission for review. In the future version of the paper, I would suggest staying more focused on the musicology side. As the target of the paper is not to improve chord recognition, the evaluation of the chord recognition could be reduced in length but should be systematic (e.g., using mir_eval). After that, I would suggest improving the presentation of the results – the current results can be meaningful but need to be better structured and interpreted. Please check detailed comments and suggestions above.
+7. Ethical approval:
+This paper uses existing datasets and therefore no ethical approval is needed.
+8. Other Comments:
+ 
+Reviewer 3:
+ Recommendation: Accept Submission
+1. Originality:
+Highly original
+Comments/Explanation:
+See review
+2. Previous work:
+High
+Comments/Explanation:
+See review
+3. Methodology:
+Sufficient methodology
+Comments/Explanation:
+See review
+4. Clarity:
+Very clear
+Comments/Explanation:
+See review
+5. Reproducibility:
+The authors are very clear on their methods, and all materials and data are publicly available.
+6. Overall value:
+High
+Comments/Explanation:
+This topic is extremely timely.
+7. Ethical approval:
+Ethics are sufficiently discussed in the article.
+8. Other Comments:
+This is a great article, that was a pleasure to read.
+Reviewer 4:
+ Recommendation: Revisions Required
+1. Originality:
+Somewhat original
+Comments/Explanation:
+This submission makes a timely contribution by applying large-scale MIR techniques to questions that are explicitly musicological in nature: harmonic practice, formal organisation, and stylistic convergence in AI-generated popular music. The scale of the corpus (60,014 tracks) and the comparative framing between two commercially deployed generative platforms (Suno and Udio) against a human-composed reference corpus advances the emerging field of AI music studies.
+
+ The individual analytical tools employed here (self-similarity matrices, chord trigrams, BPE segmentation) are established techniques. What distinguishes this work is the interpretive synthesis: aligning statistical findings with historically grounded notions of harmonic convention and formal repetition. The explicit attempt to connect MIR outputs to questions of musical knowledge, creative agency, and cultural practice sets it apart from purely technical studies.
+
+ That said, the broad conclusions will not surprise musicologists familiar with these platforms. The finding that AI systems disproportionately reproduce late-20th- and early-21st-century pop harmonic schemas, or that loop-based formal structures dominate generative output, confirms what many have suspected. The contribution is best characterised as confirmatory, though evidentially robust.
+2. Previous work:
+Medium low
+Comments/Explanation:
+The manuscript demonstrates solid engagement with MIR literature on chord estimation, structural segmentation, and corpus-scale analysis, but more limited engagement with musicological scholarship on harmony and form. The integration of Temperley and de Clercq's (2013) rock harmony corpus provides appropriate grounding for defining "canonical" pop progressions.
+
+ From a musicological standpoint, the engagement with harmony scholarship should be strengthened in targeted ways. The discussion of canonical pop progressions such as I–V–vi–IV relies on a Wikipedia citation (note 14), which is inadequate for a scholarly journal. Substantial musicological literature exists on this phenomenon, including Christopher Doll's (2017) work on harmonic syntax in rock and Mark Spicer's (2017) work on tonal ambiguity in pop. Acknowledgment of debates surrounding functional reduction, modal mixture, and harmonic ambiguity in popular music (e.g., Biamonte 2010 on triadic modal patterns; or Nobile 2020 on form-functional harmony in rock) would help situate the computational choices within a broader analytical discourse.
+
+ Additionally, the paper would benefit from engaging with genre ontology literature (e.g., Fabbri 1982, Holt 2007). As the authors note (lines 530–533), "Jazz" in Suno/Udio often signifies ambient/mood music with no particular harmonic patterns found in standard jazz styles. When comparing platform "Jazz" to Last.fm "Jazz" (which likely includes recordings by Miles Davis or John Coltrane), the study may be comparing two different ontologies of the word "Jazz." A brief discussion of this distinction would strengthen the interpretation of genre-specific results.
+3. Methodology:
+Sufficient methodology
+Comments/Explanation:
+The technical methodology is carefully designed and well justified given the known limitations of off-the-shelf MIR tools. The combination of source separation (Hybrid Demucs), polyphonic MIDI transcription (Basic Pitch), beat alignment, and rule-based harmonic labelling represents a thoughtful approach that balances scalability with musical specificity. The validation against iReal Pro annotations lends credibility to the subsequent analysis. However, several methodological choices warrant scrutiny from a music-analytical perspective.
+
+ 1. The paper captures chord identity (root and quality) but not chord function in a robust sense. While the authors use Roman numeral notation, this depends on reliable key estimation, which the paper does not discuss in detail. Trigram analysis captures local sequential patterns but cannot distinguish, for instance, a IV chord functioning as a pre-dominant from one functioning as a plagal return to tonic.
+
+ 2. The authors acknowledge (lines 746–748) that slash chords were not correctly defined. In many pop and R&B styles, bass motion in inversions (e.g., I/3 moving to IV) is structurally defining. If the system defaults to root position, it may underreport harmonic variety in the human corpus (Last.fm), potentially making AI music appear closer to human music than it actually is. A brief acknowledgment of how this flattening affects claims about "harmonic richness" would be prudent.
+
+ 3. The BPE analysis (Section 5.3) successfully identifies repetition patterns, but the interpretation of abstract patterns as formal templates (e.g., "[2, 3] = Verse–Chorus") is speculative. In electronic and hip-hop genres prominent in this dataset, this binary might better represent "Loop A / Loop B" or "Drop / Breakdown." Since the authors argue that Suno converges on "narrow formal spaces," it is worth distinguishing between teleological song form (with narrative arc) and non-teleological loop form (static repetition). Is Suno's output a return to "pop form," or a descent into "library music" loop structures? A sentence addressing this distinction would add theoretical depth.
+4. Clarity:
+Somewhat clear
+Comments/Explanation:
+The manuscript is generally well organised, with a logical progression from background through methodology to results and discussion. Technical sections are clearly written, and figures are informative. Several issues affect clarity.
+
+ 1. The paper uses "harmonic structure" and "chord progressions" somewhat interchangeably without distinguishing between surface progressions, phrase-level patterns, and large-scale tonal planning. Similarly, "musical form" sometimes refers to sectional organisation and sometimes to repetition patterns. These are related concepts, but conflating them can obscure the argument.
+
+ 2. The characterisation of Suno as exemplifying "algorithmic monoculture" (lines 815–821) is stronger than the data warrant. The paper would benefit from more hedged language that acknowledges alternative interpretations.
+
+ 3. Where the paper shifts from computational observation to musical interpretation (e.g., associating trigrams with stylistic idioms), these moves could be framed more explicitly as heuristic mappings rather than analytical certainties.
+5. Reproducibility:
+Reproducibility is a clear strength. The release of beat-level chord annotations, structural boundaries, self-similarity matrices, metadata, and code under an MIT license aligns with best practices and significantly enhances the paper's value.
+
+ From a musicological perspective, the availability of intermediate representations (as opposed to final statistics alone) is particularly welcome, enabling critical interrogation of how analytical abstractions shape musical interpretation. The authors might briefly highlight potential reuses for non-MIR scholars, such as comparative harmonic studies, pedagogy, or historiographic research.
+
+ The reliance on proprietary AI platforms introduces reproducibility challenges, as model versions change frequently (the authors note "Suno version 3.5 and below"). This is appropriately acknowledged.
+6. Overall value:
+Medium high
+Comments/Explanation:
+This manuscript makes a valuable contribution to the emerging study of AI-generated music. It demonstrates the feasibility of large-scale computational analysis, provides a significant open dataset, and documents that different AI platforms exhibit different harmonic and formal tendencies. This is a finding worth establishing empirically.
+
+ The paper implicitly demonstrates that analytical abstraction is never neutral: platform design, training data, and analytical vocabulary all converge to delimit musical possibility spaces. This reflexive dimension makes the article a useful reference point for interdisciplinary discussions between MIR, music theory, and musicology.
+
+ For musicologists specifically, the paper's value would be enhanced by:
+ 1. Clearer distinction between statistical patterns and aesthetic or musical significance
+ 2. Acknowledgment that chord-label distributions do not exhaust what we mean by "harmonic practice"
+ 3. Recognition that harmonic simplicity is not inherently a deficiency; many highly valued musical traditions (blues, minimalism, electronic dance music) employ restricted vocabularies
+7. Ethical approval:
+No human subjects were used in this research. The authors address data acquisition ethics in Section 9, invoking the EU Copyright Directive's text-and-data-mining exception for their web scraping of Suno and Udio content. I did not identify any additional ethics approval requirements beyond what is stated.
+8. Other Comments:
+The observation that Suno/Udio "Jazz" lacks standard jazz harmonic patterns (lines 530–533) deserves more prominence. If Suno's "Jazz" is harmonically simple, this may reflect user intent ("background vibe") rather than model incapacity ("Coltrane changes"). Clarifying whether "homogenisation" reflects the model's harmonic capacity or the simplified semantic requests of users would strengthen the analysis.
+
+ From a music-theoretical perspective, two progressions with identical Roman numeral labels can sound entirely different depending on voice leading, spacing, and realisation. The reduction to chord symbols discards this information. Additionally, harmonic rhythm (the rate of chord change relative to metric structure) is crucial for understanding harmonic practice and is entirely absent here. These are not fatal flaws but should be explicitly acknowledged as limitations.
+
+ Minor corrections:
+ - Line 747: "where not correctly defined" should read "were (?) not correctly defined"
+ - Note 14's Wikipedia citation should be replaced with scholarly sources (Doll, Spicer, Biamonte)
+

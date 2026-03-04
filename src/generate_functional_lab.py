@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
-Generate functional-harmony LAB files using music21 with audio HPCP+K-K tonality.
+Generate functional-harmony LAB files using music21.
+
+Key estimation: duration-weighted diatonic template matching on ACE .lab chords.
+For each of 24 candidate keys (12 major + 12 minor), compute the fraction of
+total chord duration that is diatonic.  The key with the highest weighted
+diatonic coverage wins.
 
 Output format (per line):
     <start> <end> <functional>
@@ -20,7 +25,6 @@ import os
 import re
 from pathlib import Path
 
-import librosa
 import numpy as np
 import music21
 from joblib import Parallel, delayed
@@ -35,9 +39,15 @@ DEFAULT_DATASET_BASE = "/workspace/dataset"
 DEFAULT_AUDIO_BASE = "/mnt/Aimir_HD"  # audio at {audio_base}/{collection}/audio/{song_id}.mp3
 DEFAULT_N_JOBS = 20
 
-# K-K profiles
-MAJOR_PROFILE = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
-MINOR_PROFILE = np.array([6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
+# ---------------------------------------------------------------------------
+# Diatonic templates: for each mode, the expected (root_pc, quality) of each
+# scale degree.  quality is 'maj', 'min', or 'dim'.
+# ---------------------------------------------------------------------------
+#                       I       ii      iii     IV      V       vi      vii°
+_MAJOR_TEMPLATE = [(0,'maj'),(2,'min'),(4,'min'),(5,'maj'),(7,'maj'),(9,'min'),(11,'dim')]
+#                       i       ii°     III     iv      v/V     VI      VII
+# Includes BOTH v:min (natural) and V:maj (harmonic minor) as diatonic.
+_MINOR_TEMPLATE = [(0,'min'),(2,'dim'),(3,'maj'),(5,'min'),(7,'min'),(7,'maj'),(8,'maj'),(10,'maj')]
 
 NOTE_TO_PC = {
     "C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3,
@@ -113,49 +123,114 @@ def root_to_pitch_class(root):
     return NOTE_TO_PC.get(root, -1)
 
 
-def match_key_profile(pc_distribution):
-    best_key = None
-    best_corr = -2
+def _classify_quality(quality_str):
+    """Map a LAB quality string to one of 'maj', 'min', 'dim', 'aug', 'sus', 'other'."""
+    q = quality_str.lower().strip()
+    if not q or q in ('maj', 'maj7', 'maj9', '7', '9', '11', '13', '6', 'add9',
+                       '7sus4', '7sus2', '5'):
+        # dominant-7, plain triads, extensions → functionally major
+        return 'maj'
+    if q in ('sus4', 'sus2'):
+        return 'sus'                    # ambiguous — we give partial credit
+    if q.startswith('min') or q.startswith('m') or q in ('m7b5', 'hdim7'):
+        if 'dim' in q:
+            return 'dim'
+        return 'min'
+    if q in ('dim', 'dim7'):
+        return 'dim'
+    if q in ('aug',):
+        return 'aug'
+    return 'other'
+
+
+def _score_key(lab_rows, tonic_pc, template):
+    """Score a candidate key (tonic_pc + template) against the .lab rows.
+
+    For each chord we check whether (root_pc, quality) matches a diatonic
+    scale degree.  The returned score is the total duration (seconds) of
+    matching chords.  A 'sus' chord gets 0.5 credit if the root is diatonic.
+
+    A 20% bonus is added for tonic-chord duration to break ties between
+    relative major/minor keys (which share the same diatonic pitch-class set).
+    """
+    score = 0.0
+    tonic_dur = 0.0
+    total_dur = 0.0
+    # Build lookup: transposed template → set of (pc, quality)
+    diatonic = {((tonic_pc + pc) % 12, q) for pc, q in template}
+    diatonic_roots = {(tonic_pc + pc) % 12 for pc, _ in template}
+    # Expected tonic quality
+    tonic_quality = template[0][1]          # 'maj' for major, 'min' for minor
+
+    for row in lab_rows:
+        dur = row["end"] - row["start"]
+        if dur <= 0:
+            continue
+        total_dur += dur
+
+        root_str = parse_root_from_label(row["label"])
+        root_pc = root_to_pitch_class(root_str)
+        if root_pc < 0:
+            continue
+
+        # Determine quality from the label
+        label = row["label"]
+        if ":" in label:
+            raw_q = label.split(":", 1)[1]
+            # Strip bass note
+            if "/" in raw_q:
+                raw_q = raw_q.rsplit("/", 1)[0]
+            # Strip parenthetical extensions
+            if "(" in raw_q:
+                raw_q = raw_q[:raw_q.index("(")]
+        else:
+            raw_q = ""
+        quality = _classify_quality(raw_q)
+
+        if (root_pc, quality) in diatonic:
+            score += dur
+            # Track tonic chord duration
+            if root_pc == tonic_pc and quality == tonic_quality:
+                tonic_dur += dur
+        elif quality == 'sus' and root_pc in diatonic_roots:
+            score += dur * 0.5              # partial credit for sus chords
+            if root_pc == tonic_pc:
+                tonic_dur += dur * 0.25
+        elif quality == 'other' and root_pc in diatonic_roots:
+            score += dur * 0.25             # small credit for exotic qualities on diatonic root
+
+    # Tonic bonus: 20% of tonic chord duration added to break relative-key ties
+    score += tonic_dur * 0.2
+
+    return score, total_dur
+
+
+def estimate_key_diatonic(lab_rows):
+    """Estimate key via duration-weighted diatonic template matching.
+
+    Tries all 24 keys (12 major + 12 minor).  Returns (root_note, mode, confidence)
+    where confidence ∈ [0, 1] is the fraction of total duration that is diatonic.
+    """
+    if not lab_rows:
+        return "C", "major", 0.0
+
+    best_root = "C"
+    best_mode = "major"
+    best_score = -1.0
+    total_dur = 0.0
+
     for pc in range(12):
-        rotated_major = np.roll(MAJOR_PROFILE, pc)
-        rotated_minor = np.roll(MINOR_PROFILE, pc)
-        major_corr = np.corrcoef(pc_distribution.astype(float), rotated_major.astype(float))[0, 1]
-        minor_corr = np.corrcoef(pc_distribution.astype(float), rotated_minor.astype(float))[0, 1]
-        if major_corr > best_corr:
-            best_corr = major_corr
-            best_key = (PC_TO_NOTE[pc], "major")
-        if minor_corr > best_corr:
-            best_corr = minor_corr
-            best_key = (PC_TO_NOTE[pc], "minor")
-    if not best_key:
-        return "C", "major", 0.0
-    return best_key[0], best_key[1], float(best_corr)
+        for template, mode in [(_MAJOR_TEMPLATE, "major"), (_MINOR_TEMPLATE, "minor")]:
+            sc, td = _score_key(lab_rows, pc, template)
+            if td > 0:
+                total_dur = td
+            if sc > best_score:
+                best_score = sc
+                best_root = PC_TO_NOTE[pc]
+                best_mode = mode
 
-
-def estimate_key_from_audio_hpcp(audio_path, sr=22050):
-    y, sr = librosa.load(audio_path, sr=sr, mono=True)
-    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
-    chroma_mean = np.mean(chroma, axis=1)
-    if chroma_mean.sum() == 0:
-        return "C", "major", 0.0
-    chroma_mean = chroma_mean / chroma_mean.sum()
-    return match_key_profile(chroma_mean)
-
-
-def estimate_key_from_chords(chord_labels):
-    if not chord_labels:
-        return "C", "major", 0.0
-    pc_counts = np.zeros(12, dtype=float)
-    for label in chord_labels:
-        root = parse_root_from_label(label)
-        pc = root_to_pitch_class(root)
-        if pc >= 0:
-            pc_counts[pc] += 1
-    total = pc_counts.sum()
-    if total == 0:
-        return "C", "major", 0.0
-    pc_distribution = pc_counts / total
-    return match_key_profile(pc_distribution)
+    conf = best_score / total_dur if total_dur > 0 else 0.0
+    return best_root, best_mode, conf
 
 
 def convert_lab_notation(chord_label):
@@ -253,20 +328,8 @@ def process_song(song_id, collection, dataset_base, audio_base, output_suffix):
     if not lab_rows:
         return {"status": "skipped", "song_id": song_id, "reason": "empty_lab"}
 
-    audio_path = Path(audio_base) / collection / "audio" / f"{song_id}.mp3"
-    key_root = None
-    key_mode = None
-    key_conf = None
-
-    if audio_path.exists():
-        try:
-            key_root, key_mode, key_conf = estimate_key_from_audio_hpcp(str(audio_path))
-        except Exception:
-            key_root = None
-            key_mode = None
-
-    if not key_root:
-        key_root, key_mode, key_conf = estimate_key_from_chords([r["label"] for r in lab_rows])
+    # --- Key estimation: diatonic template matching on .lab chords ---
+    key_root, key_mode, key_conf = estimate_key_diatonic(lab_rows)
 
     lines = []
     for row in lab_rows:
@@ -302,7 +365,7 @@ def main():
     parser.add_argument("--dataset-base", default=DEFAULT_DATASET_BASE)
     parser.add_argument("--audio-base", default=DEFAULT_AUDIO_BASE)
     parser.add_argument("--n-jobs", type=int, default=DEFAULT_N_JOBS)
-    parser.add_argument("--output-suffix", default="_functional.lab")
+    parser.add_argument("--output-suffix", default="_functional_2.lab")
     parser.add_argument("--limit", type=int, default=0, help="Process only first N songs (0 = no limit)")
     args = parser.parse_args()
 
