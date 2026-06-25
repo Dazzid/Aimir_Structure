@@ -465,12 +465,12 @@ We apply BPE to sequences of label segments to explore patterns in song structur
 Each sequence begins with \texttt{<init>} and ends with \texttt{<end>} to mark the song's boundaries.
 
 We applied BPE across the three music collections: $859,882$ trigrams in Lastfm, $1,052,255$ trigrams in Suno, and $608,663$ trigrams in Udio; in total, $2,520,800$ trigrams. This process finds and merges the most frequent adjacent tokens, revealing larger structural motifs that reflect how songs are typically organized.
-\highLight[r2!20!white]{Figure~\ref{fig:BPE_musical_form} shows the most frequent BPE merge pairs; the results are discussed in Section~\ref{sec:disc_structure}.}
+\highLight[r2!20!white]{Figure~\ref{fig:musical_form} shows the most frequent BPE merge pairs; the results are discussed in Section~\ref{sec:disc_structure}.}
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=\linewidth]{figures/BPE_musical_form.png}
+    \includegraphics[width=\linewidth]{figures/tetragram_musical_form.png}
     \caption{Tetragram-Form heatmap across collections. Each row represents a frequently merged BPE pair of consecutive musical-form trigrams (trigram A → last cell of trigram B). Cell shading encodes relative frequency within each collection; integer annotations report absolute merge counts. Pairs are sorted by descending Lastfm frequency.}
-    \label{fig:BPE_musical_form}
+    \label{fig:musical_form}
 \end{figure}
 
 
@@ -479,7 +479,7 @@ We applied BPE across the three music collections: $859,882$ trigrams in Lastfm,
 
 \begin{figure*}[!ht]
     \centering
-    \includegraphics[width=\linewidth]{figures/musical_form.png}
+    \includegraphics[width=\linewidth]{figures/radial_musical_form.png}
     \caption{Normalized musical form trigram profiles across eight human-annotated genre tags per collection. Each axis represents a trigram of three consecutive section labels (e.g., chorus-verse-chorus), extracted after collapsing repeated adjacent sections. For each genre, the top trigrams are selected by Lastfm frequency, and values are normalized to the maximum count per collection within each genre.}
     \label{fig:musical_form}
 \end{figure*}
@@ -536,7 +536,7 @@ At the $\geq$10\% threshold, $12.6\%$ of Lastfm songs, $14.7\%$ of Udio songs, a
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=\linewidth]{figures/p-trigram_axis_2.png}
+    \includegraphics[width=\linewidth]{figures/tetragram_axis.png}
     \caption{Distribution of the percentage of axis-based tetragrams per song across the three collections (songs with $\geq$10\% axis content only). Lastfm shows $12.6\%$, Suno $32.0\%$, and Udio $14.7\%$ of songs exceeding the $10\%$ axis tetragram threshold.}
     \label{fig:p-trigram}
 \end{figure}
@@ -590,7 +590,7 @@ Udio's harmonic distributions, by contrast, are statistically closer to those of
 
 The BPE analysis of section-label sequences and the Unique Tokens Ratio provide complementary views of formal diversity across the three collections.
 
-Suno exhibits the strongest convergence toward simple, repetitive structures. Verse-chorus cycles (ABAB patterns) dominate its merge history, and its Unique Tokens Ratio is the lowest of the three collections ($0.44 \pm 0.18$), indicating that the average Suno track draws from fewer distinct section types than either human-composed or Udio-generated music. Udio, by contrast, shows the highest formal diversity ($0.58 \pm 0.20$), with Lastfm occupying an intermediate position ($0.51 \pm 0.19$). The BPE merge-pair heatmap (Figure~\ref{fig:BPE_musical_form}) confirms that Udio's merge frequencies are closer to Lastfm than to Suno. \highLight[r1!20!white]{Of particular note, the second most frequent pattern in both AI collections --- \texttt{verse·chorus·inst~$\rightarrow$~verse} (Suno: $2,103$; Udio: $1,599$) --- is entirely absent from Lastfm. Both systems frequently produce instrumental sections as structural connectors within verse-chorus cycles, a formal strategy with no parallel in the human corpus.} 
+Suno exhibits the strongest convergence toward simple, repetitive structures. Verse-chorus cycles (ABAB patterns) dominate its merge history, and its Unique Tokens Ratio is the lowest of the three collections ($0.44 \pm 0.18$), indicating that the average Suno track draws from fewer distinct section types than either human-composed or Udio-generated music. Udio, by contrast, shows the highest formal diversity ($0.58 \pm 0.20$), with Lastfm occupying an intermediate position ($0.51 \pm 0.19$). The BPE merge-pair heatmap (Figure~\ref{fig:musical_form}) confirms that Udio's merge frequencies are closer to Lastfm than to Suno. \highLight[r1!20!white]{Of particular note, the second most frequent pattern in both AI collections --- \texttt{verse·chorus·inst~$\rightarrow$~verse} (Suno: $2,103$; Udio: $1,599$) --- is entirely absent from Lastfm. Both systems frequently produce instrumental sections as structural connectors within verse-chorus cycles, a formal strategy with no parallel in the human corpus.} 
 
 The normalized musical form trigram profiles per genre (Figure~\ref{fig:musical_form}) reveal a consistent pattern across styles. Both Suno and Udio show a reduced range of formal options relative to Lastfm, with intro-verse-chorus sequences markedly under-represented and solo sections largely absent. This is consistent with how both platforms operate: users generate a song segment that begins directly with a verse-chorus cycle and can later be extended via the web interface. The result is that intro sections, which precede the core structure, and solo sections, which typically appear later in human-composed music, are rarely generated in the initial output. \highLight[r3!20!white]{The same genre-ontology caveat raised for Figure~\ref{fig:trigrams_per_style} applies here: the Jazz polygon in Figure~\ref{fig:musical_form} should not be read as a direct cross-collection comparison of jazz formal conventions, since the tracks grouped under that label differ substantially in character across the three corpora.}
 
