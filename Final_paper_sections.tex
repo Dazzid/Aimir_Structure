@@ -32,7 +32,7 @@
 \usepackage{xcolor}
 \usepackage{float}
 
-\definecolor{r2}{RGB}{0, 100, 200}  
+\definecolor{r2}{RGB}{0, 80, 200}  
 \definecolor{r3}{RGB}{0, 90, 255}  
 \definecolor{r4}{RGB}{0, 160, 80}   % round-3 (additional reviewer) changes
 \newcommand{\rev}[1]{{\color{r2}#1}} % new-version (round-3) edits
@@ -279,7 +279,7 @@ For example, the progression $Dm7$, $Ab7$, $Gm7$, $C\#ø7$, \ldots\ yields $[Dm7
 The process is as follows:
 
 \begin{enumerate}
-    \item \textbf{Normalization:} Absolute chord labels are first converted to Roman numerals and consecutive identical Roman numerals are de-duplicated, as described in Section~\ref{sec:ace_pipeline}. The example above uses absolute chord labels for illustrative clarity. Sequences containing ``no-chord'' labels were not considered for trigrams.
+    \item \textbf{Normalization:} Absolute chord labels are first converted to Roman numerals, and consecutive identical Roman numerals are de-duplicated, as described in Section~\ref{sec:ace_pipeline}. The example above uses absolute chord labels for illustrative clarity. Sequences containing ``no-chord'' labels were not considered for trigrams.
 
     \item \textbf{Trigram Generation:}
     For each song, we extracted overlapping chord trigrams from the Roman numeral sequence using a sliding window approach:
@@ -305,7 +305,7 @@ A window is retained only if at least three of its four chords are distinct, com
 We measure how often songs in each collection contain chord progressions matching the Axis of Awesome \citep{richards2017tonal}, using the Roman numeral sequences produced by the ACE pipeline. %(Section~\ref{sec:ace_pipeline}). 
 \rev{Four-chord sequences, which we refer to as \textbf{tetragrams}, are sliding four-chord windows over the deduplicated Roman numeral sequence, as in Section~\ref{sec:tetragram_generation}; here every window enters the analysis, without the retention rule used to build the tetragram dataset.}
 
-The Axis of Awesome is associated with three four-chord sets: the major form \{I, V, vi, IV\}, the minor form \{i, $\flat$VI, III, $\flat$VII\}, and a minor variant \{i, $\flat$VI, $\flat$III, $\flat$VII\}. \rev{We report two measures of how a song uses these sets. The first, axis-family membership, counts a four-chord window when its chords form one of the sets in any of the $24$ orderings ($72$ patterns in total), and measures whether a track draws on axis-family pitch material. The second, the literal Axis loop, counts a window only when it is one of the $12$ rotations that keep the chords in their canonical cyclic order, and measures the recurring progression itself. This follows \citet{richards2017tonal}: the cycle strongly tends to appear in its given order, so rotation equivalence (the same loop begun on a different chord) is musically meaningful, whereas wider reorderings are not. Rotation equivalence also absorbs relative-major/minor ambiguity in the global key estimate from which the Roman numerals are derived (Section~\ref{sec:ace_pipeline}): the four chords C, G, Am, F are labeled \texttt{I-V-vi-IV} when the key is read as C~major but \texttt{III-bVII-i-bVI}, the minor-form set begun on a different chord, when it is read as the relative A~minor. Treating all three sets and their rotations as one loop recovers the progression in both readings, so a track is not counted as non-axis merely because its key estimate landed on the relative key.} From here, we will refer to this pattern of chord progressions as Axis.
+The Axis of Awesome is associated with three four-chord sets: the major form \{I, V, vi, IV\}, the minor form \{i, $\flat$VI, III, $\flat$VII\}, and a minor variant \{i, $\flat$VI, $\flat$III, $\flat$VII\}. \rev{We report two measures of how a song uses these sets. The first, axis-family membership, counts a four-chord window when its chords form one of the sets in any of the $24$ orderings ($72$ patterns in total), and measures whether a track draws on axis-family pitch material. The second, the literal Axis loop, counts a window only when it is one of the $12$ rotations that keep the chords in their canonical cyclic order, and measures the recurring progression itself. This follows \citet{richards2017tonal}: the cycle strongly tends to appear in its given order. Rotation equivalence also absorbs relative-major/minor ambiguity in the global key estimate from which the Roman numerals are derived (Section~\ref{sec:ace_pipeline}): the four chords C, G, Am, F are labeled \texttt{I-V-vi-IV} when the key is read as C~major but \texttt{III-bVII-i-bVI}, the minor-form set begun on a different chord, when it is read as the relative A~minor. Treating all three sets and their rotations as one loop recovers the progression in both readings, so a track is not counted as non-axis merely because its key estimate landed on the relative key.} From here, we will refer to this pattern of chord progressions as Axis.
 
 All Roman numeral labels are first normalized enharmonically via a 12-tone semitone mapping (e.g., \texttt{\#V}~$\rightarrow$~$\flat$\texttt{VI}), and consecutive identical labels are removed. A sliding window of four chords is then passed over each collapsed sequence, and every four-chord window $(a, b, c, d)$ is \rev{tested for membership in both pattern sets: the $72$ axis-family patterns and the $12$ rotation-only patterns}.
 
@@ -331,7 +331,7 @@ The analyses proceed from the broadest view of the harmonic palette to increasin
 \subsection{Trigram Tendencies Across Collections}
 \label{sec:trigram_tendencies}
 
-Figure~\ref{fig:top_30_trigrams} shows the thirty most prevalent trigram patterns in the three members of the collection (Lastfm, Suno, and Udio), distributed over the ten most common styles found by extracting the metadata descriptors of the songs. The label ``Others" recollects several styles in one group. Both Udio and Suno show a strong tendency to Pop, Rock, Metal, and Electronic.
+Figure~\ref{fig:top_30_trigrams} shows the thirty most prevalent trigram patterns in the three members of the collection (Lastfm, Suno, and Udio), distributed over the ten most common styles found by extracting the metadata descriptors of the songs. The label ``Others" collects several styles in one group. Both Udio and Suno show a strong tendency toward Pop, Rock, Metal, and Electronic.
 
 
 % Note: Describe better the style detection in the three collections. 
@@ -339,7 +339,7 @@ While we acknowledge that the style tags associated with tracks in our dataset a
 
 The collection-level differences visible in Figure~\ref{fig:top_30_trigrams} are quantified in detail in Sections~\ref{sec:suno_tendencies}--\ref{sec:axis_tendencies}.
 
-In Figure~\ref{fig:vocabulary_distribution}, an equivalent distribution of chord qualities is seen in all three collections. The major chord is the most common, followed by minor, power chords, suspended fourths, and dominant sevenths. As an observation, dominant chords with sharp ninth or flat thirteenth, also altered dominant, are commonly used in minor and major modes, as a modal interchange in major tonalities. The dominant sharp eleventh is not common; the once-ubiquitous dominant substitution used in jazz, bossa-nova, or soul has become an endangered harmonic particularity in all three collections. Power chord, as a neutral quality, is used with mixed frequency across major and minor tonalities.
+In Figure~\ref{fig:vocabulary_distribution}, an equivalent distribution of chord qualities is seen in all three collections. The major chord is the most common, followed by minor, power chords, suspended fourths, and dominant sevenths. As an observation, dominant chords with a sharp ninth or flat thirteenth, also altered dominant, are commonly used in minor and major modes, as a modal interchange in major tonalities. The dominant sharp eleventh is not common; the once-ubiquitous dominant substitution used in jazz, bossa-nova, or soul has become an endangered harmonic particularity in all three collections. Power chord, as a neutral quality, is used with mixed frequency across major and minor tonalities.
 
 \begin{figure}[ht]
     \centering
@@ -348,7 +348,7 @@ In Figure~\ref{fig:vocabulary_distribution}, an equivalent distribution of chord
     \label{fig:vocabulary_distribution}
 \end{figure}
 
-Figure~\ref{fig:tonalities} shows a distribution of the tonalities found in all collections. The quantification is sorted to Lastfm occurrence. The proportions show similarities on AI-generated music platforms; nevertheless, Suno shows stronger tendencies to produce C major, D major, G major, and B major, compared to Lastfm and Udio. Udio has a prominent presence of A minor, G minor and Eb minor. The distribution of tonalities is consistent with the cycle of the fifth.
+Figure~\ref{fig:tonalities} shows a distribution of the tonalities found in all collections. The quantification is sorted to Lastfm occurrence. The proportions show similarities on AI-generated music platforms; nevertheless, Suno shows stronger tendencies to produce C major, D major, G major, and B major, compared to Lastfm and Udio. Udio has a prominent presence of A minor, G minor, and Eb minor. The distribution of tonalities is consistent with the cycle of the fifth.
 
 \begin{figure}[ht]
     \centering
@@ -382,7 +382,7 @@ To quantify the tendencies shown in Figure~\ref{fig:trigrams_per_style} for each
 where $N_{\mathrm{Suno},t}$ and $N_{\mathrm{Ref},t}$ are the counts of trigram~$t$ in \textit{Suno} and in the reference corpus, respectively, while $N_{\mathrm{Suno}}$ and $N_{\mathrm{Ref}}$ denote the total numbers of trigrams in those two corpora.
 
 \smallskip
-To test whether the difference is greater than expected by chance, we build a $2\times2$ contingency table (\emph{Suno vs.\ Reference}\,$\times$\,$t$ vs.\ ``all other trigrams'') and apply Fisher's exact test. All raw $p$-values are corrected for multiple comparisons with the Benjamini--Hochberg false-discovery-rate procedure \citep{benjamini1995controlling}; the resulting $p$-value is used to filter and choose the trigrams that are shown in the Table \ref{tab:suno_enrichment}:
+To test whether the difference is greater than expected by chance, we build a $2\times2$ contingency table (\emph{Suno vs.\ Reference}\,$\times$\,$t$ vs.\ ``all other trigrams'') and apply Fisher's exact test. All raw $p$-values are corrected for multiple comparisons with the Benjamini--Hochberg false-discovery-rate procedure \citep{benjamini1995controlling}; the resulting $p$-value is used to filter and choose the trigrams that are shown in Table \ref{tab:suno_enrichment}:
 
 \begin{itemize}
   \item at least $30$ occurrences in Suno and $10$ in the reference,
@@ -538,7 +538,7 @@ We also computed the ``Unique Tokens Ratio,'' which reflects how many different 
     \label{fig:axis_distribution}
 \end{figure}
 
-\rev{The rates above count how many songs lean on the axis; they do not say, when a collection reaches for these four chords, whether it plays the loop or rearranges them. Figure~\ref{fig:axis_rotation} answers that, splitting the four-chord windows built on the axis chords into the loop itself and the same chords in a different order. Panel~(a) gives each as a share of all four-chord windows: Suno places 12.3\% on the axis chords (3.4\% Lastfm, 4.5\% Udio), most of it the loop. Panel~(b) is the loop's share of that usage: 54.3\% for Suno, against 36.3\% Lastfm and 38.5\% Udio. When Suno uses these chords, it usually plays the loop rather than a rearrangement.}
+\rev{The rates above count how many songs lean on the axis; they do not say, when a collection reaches for these four chords, whether it plays the loop or rearranges them. Figure~\ref{fig:axis_rotation} answers that, splitting the four-chord windows built on the axis chords into the loop itself and the same chords in a different order. Panel~(a) gives each as a share of all four-chord windows: Suno places 12.3\% on the axis chords (3.4\% Lastfm, 4.5\% Udio), most of it in the loop. Panel~(b) is the loop's share of that usage: 54.3\% for Suno, against 36.3\% for Lastfm and 38.5\% for Udio. When Suno uses these chords, it usually plays the loop rather than a rearrangement.}
 
 \begin{figure}[!ht]
     \centering
@@ -570,7 +570,7 @@ We now discuss the three research questions about AI-generated music at the corp
 
 The chord estimator and structural model adopted in this study 
 % (Sections~\ref{sec:ace_pipeline} and~\ref{sec:form_pipeline}) 
-address the principal methodological concerns for corpus-scale analysis, but challenges remain that should be acknowledged. For chord estimation, even state-of-the-art models exhibit lower accuracy on complex chord types (sevenths, extensions, suspensions, inversions) than on triads~\citep{pauwels2013evaluating}, and reported performance is sensitive to evaluation vocabulary and chord mapping strategies. \rev{The conversion from chord labels to Roman numerals depends on a single global key estimated per track, which can be wrong under modulation, strong modal mixture, or relative-major/minor ambiguity, and then propagates to every Roman numeral in the track. The same estimator runs identically on all three collections, so any such error is shared and cannot create the between-collection differences we report.} Furthermore, consonance-ACE assumes enharmonic equivalence: sharp ninths, sharp elevenths, and flat thirteenths are encoded as their enharmonic equivalents (flat third, flat fifth, and flat sixth respectively), and therefore do not appear as distinct labels in the chord vocabulary.
+address the principal methodological concerns for corpus-scale analysis, but challenges remain that should be acknowledged. For chord estimation, even state-of-the-art models exhibit lower accuracy on complex chord types (sevenths, extensions, suspensions, inversions) than on triads~\citep{pauwels2013evaluating}, and reported performance is sensitive to evaluation vocabulary and chord mapping strategies. \rev{The conversion from chord labels to Roman numerals depends on a single global key estimated per track, which can be wrong under modulation, strong modal mixture, or relative-major/minor ambiguity, and then propagates to every Roman numeral in the track. The same estimator runs identically on all three collections, so any such error is shared and cannot create the between-collection differences we report.} Furthermore, consonance-ACE assumes enharmonic equivalence: sharp ninths, sharp elevenths, and flat thirteenths are encoded as their enharmonic equivalents (flat third, flat fifth, and flat sixth, respectively), and therefore do not appear as distinct labels in the chord vocabulary.
 
 This study operates at the level of chord-label distributions and n-gram sequential patterns, which is the appropriate granularity for corpus-scale comparison across $60,014$ tracks. Voice leading, harmonic rhythm, and chord-voicing detail are not captured in any chord-symbol-based corpus study and fall outside the present scope.
 
