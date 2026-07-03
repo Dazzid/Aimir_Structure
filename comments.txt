@@ -1,0 +1,106 @@
+Dear David Dalmazzo, Laura Cros Vila, Luca Casini, Bob L.T. Sturm,
+
+After review, we have reached a decision regarding your submission to Transactions of the International Society for Music Information Retrieval, " Data-Driven Analysis of Musical Form and Harmonic Structure in AI-Generated Popular Music: A Case Study with Suno and Udio ". Our decision is to request revisions of the manuscript. These revisions may then undergo further peer review prior to acceptance.
+
+Please could you have the revisions submitted by the end of August? If you cannot make this deadline, please let us know as early as possible.
+
+Please find the at the bottom of this email 3 regular reviews for your manuscript along with editor comments (meta-review) and an additional review (with editor comments). There is much to get into here. We hope you find it useful. Please note especially the editor's observation of issues from the first round that have not been addressed.
+
+Apart from revising your manuscript based on the reviewers' feedback, we also require you to write a response to the reviewers, explaining how you have addressed their comments. In your response letter, please provide a point-by-point reply to all questions and concerns raised by the reviewers. Furthermore, in the revised version, please highlight the changes you have made compared to the original submission.
+
+You must upload your revised files and the response as follows:
+
+1) login to the journal account with your username and password
+2) access ‘My Queue’ and click ‘View’ for the submission in question
+3) click ‘Upload File’, within the Revisions section
+4) (a pop-up window will display) Select the article component you are uploading (e.g. manuscript, figure etc) and then either drag your file into the displayed area or click ‘Upload file’ to select it from your files. When done click ‘Continue’
+5) check the file name is appropriate (edit it here if not) and then click ‘Continue’
+6) if you wish to upload another revised file, click ‘Add another file’, otherwise, click ‘Complete’
+
+If you need to upload more files, repeat steps 3-6.
+
+When uploading your feedback to the peer review comments, please ensure that the article component ‘Response to Reviewers’ is selected.
+
+If you have trouble processing the revisions, our Help Center (https://help.u-community.io) or downloadable PDF (https://bit.ly/Author-Guide-OJS-3) may be able to help. If not, please get in touch and we’ll be happy to help.
+
+Please ensure that your revised files adhere to our author guidelines, and that the files are fully copyedited/proofed prior to upload, including the reference list. If you are not confident that the language quality is high enough, you may wish to consider using the following (free!) authoring tools:
+- Spelling & grammar checks: https://www.grammarly.com - and also - http://spellcheckplus.com
+
+There are also many professional copyediting services that you could consider. If you would like your article to be professionally copyedited, by native English speakers, you can find a list of professional, independent copyeditors in the directory of editorial services at CIEP (Chartered Institute of Editing and Proofreading), see - https://www.ciep.uk/directory/
+
+Please also ensure that all copyright permissions have been attained. This is the last opportunity for major editing, therefore please fully check your file prior to re-submission.
+
+If you have any questions or difficulties during this process, please do contact us.
+
+Kind regards,
+
+Mark Gotham
+
+ 
+
+Editorial comments and meta-review:
+
+Recommend replacing all BPE explanation with simple tetragram, as that is what the current method is using.
+Section 2.3: I am not sure whether it's necessary to mention accessible implementations in this detail. While this was needed at the initial version, as the authors used an original method, it does not seem important to mention that some ACE methods are not easily accessible.
+Also, the sentences of Line 209-213 sound a bit contradictory to me, which explains the limitation of RNA on audio, as the latter part of the manuscript is going to analyze chord results in Roman numeral format anyway.
+Some of the bibliography issues commented by Reviewer 1 were not addressed. Lin et al 2023 ICCC, Park et al 2019 ISMIR, librosa zenodo, omissing pages in many ISMIR items
+The authors responded that they added a paragraph acknowledging the limitation of internal curation logic in Section 6, but I couldn't find it.
+Maybe the authors can consider moving L273 into Section 6 or new section about limitation.
+L477: by Casini et al. (2025),
+L509: I'm not sure if I missed something, but Figure 3 shows that Suno's usage of those permutations is quite limited.
+L517: It says "computed as risk ratios against ... using the method described in Section 4.3", but I'm not sure the authors really meant it. Section 4.3 explains how to compose a trigram, which is already used in section 5.1. The computation of the risk ratio is introduced in the latter part of this section.
+Also, Figure 6 does not look like it shows RRs, which must be larger than 1 for Suno. The tick of the y-axis is currently noted as relative frequency. Therefore, the first paragraph of this section can exclude RR, along with the mention of RR in the caption of Figure 6. Readers won't find any problem understanding Figure 6 as it is, without the concept of RR.
+Section 6.1: I'm still not clear whether the section is about applying MIR tools to "AI-Generated Music". The introduction made the same research question, but as far as I understood, the current manuscript does not include specific considerations of whether it's AI-generated or not when applying MIR tools to the audio. The current contents are about applying MIR to large corpora, not AI-generated music.
+Also, the contents have some clear overlap with Section 2. The authors might reduce it if they want.
+L858: I understand this was added to address the reviewer's concern, and I agree that the concern was reasonable, but I'm not sure whether inserting these sentences here makes the manuscript better. I worry that the narrative won't sound natural to readers (it somehow feels like the sentences are inserted only to address reviewers' concerns, rather than to make the narrative or logic clear/strong). This can be discussed in a limitation part, but maybe not in the middle of this conclusion. I'll leave it to the authors to decide.
+I think the comments on Jazz can also be moved to a limitation section.
+ 
+
+Additional review with editor comments:
+
+§2
+
+"The computational analysis of musical structure and harmony is a focus of MIR (Müller, 2015)."
+
+Stub, one-sentence section. Either expand or integrate into §2.1
+Also update Müller edition 2015 -> 2021
+§2.1.1
+
+Avoid having a single division of §2.1.
+This section lists previous studies mostly without comment on he choices made here. A narrative frame a (e.g., we considered X, Y, and settled on Y for reasons Z) would help. §2.2 and §2.3 provide this kind of structure, culminating in clear conclusion statements. They make for a much more convincing read. There are still infelicities in the wording like "We selected it because it”.
+§2.4 Harmony Analysis of Corpora
+
+Has this been added later? It does not fit well into the flow of the article. The within-section wording is also hard to follow. Even the title "Harmony Analysis of Corpora” suggests adding harmonic analysis to existing corpora as opposed to "Harmonic Analysis Corpora” which are corpora of harmonic analyses. Then there's mention of “a” corpus that complicated the single-vs-general commentary and even “melodic analysis” (which features in some relevant datasets but certainly not all). Much more clarity needed. 
+
+§3
+
+Again the writing here is hard to follow. At first, there seems to be a methodological mismatch between selecting for popularity on the Udio side and having no such control on the Suno. Then there are some comments about addressing such bias that suggest roughly equal popularity (likes, shares) but that measurement seems to be captured shortly after upload, so not giving time for those values to accrue and/or plateau. Then there’s an assertion that the sample is representative. I would find this easier to parse with a sequence that leads with the high-level goal:
+
+We aim to create a representative, unfiltered sample.
+The most practical method for this across apps is X.
+The pros and cons of this approach are Y.
+This topic appears earlier too.
+§4.1
+Krumhansl and Kessler is not ideal for pitch-class distribution in popular music as it’s more classical oriented (major-minor only, none of the pop modality). At least discuss, if not, swap out for more pop-oriented profiles (e.g., by Dominque Vuvan). A summary of these profiles is provided in the GitHub repo attached to When in Rome (TISMIR 2023). Editor: Maybe this can be integrated into one of the discussion sections, such as 6.1, where the authors discuss the limitations of the current approach?
+
+Table 3 would be better reported in terms of root pitch class and quality. Pitch with spelling to pitch class is lossy so:
+
+in general, report on what model predicts (here, pitch class, not spelling); do not use pitch spelling if it's not been predicted for properly.
+in this case, the sequence E flat – F – G is very common but the enharmonic equivalent reported here (D# - F - G) is only even seen in this kind of erroneous context. Editor: Maybe the authors can add a simple line on the caption that consonance-ACE assumes enharmonic equivalence, as also noted in the latter section.
+§4.3 Trigram Dataset Generation
+
+Again, the example chosen is off-putting. The juxtaposition of Ab7 and C#7 spelt as such is unlikely. Pick a neutral example and/or use pitch class (or indeed key-relative labels as that’s the direction of travel). Editor: I guess this example is from the old method, as consonance-ACE always uses sharp (as far as I understood)
+Typo: Collins (2025) demonstrate[s]
+§4.5
+This method statement completely mis-represents the source. Richards 2017 rightly observes that:
+
+Rotation equivalence is relevant (e.g., aFCG and CGaF are both common).
+Wider re-ordering is not: the cycle strongly tends to appears in the given order.
+As such, taking the cycle as an unordered set then is contrary to Richards, to musical intuition, and to clear corpus evidence of what equivalence are common.
+
+In the unlikely event that you want to dispute this, you have a significant burden of proof to convince the reader. Show us the relative frequency of relevant professions (rotation equivalent in set, non-rotation equivalent in set, out of set) to make the case. I’m sure you’ll find the numbers defend the Richards side and contradict the current paper approach. 
+
+Also note that the step of “normalizing” to Roman numerals can actually obscure equivalences: specifically, transposition equivalence. This is especially relevant, given the not fully convincing key assignment method as discussed above.
+
+Editor: I also read Richards 2017, and it is not clear what the authors wanted to say at L430. The reviewer wanted explanation or justification, but the revised paragraph is just a disclaimer. I'm also not sure whether the authors think (or argue that) their permutation of chord is equivalent to"rotation" in Richards paper. If I understood correctly, I guess the authors are also arguing that re-ordering changes the meaning of the progression. But the problem is that it's difficult to understand because the authors do not explain why they made this decision deliberately. Why not compare the Axis of Awesome progression strictly? In the current form, the readers might suspect that measuring the appearance of Axis of Awesome in a strict format did not make this clear difference, as it's difficult to guess what the motivation of using full perturbation is. 
+
