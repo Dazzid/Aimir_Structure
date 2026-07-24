@@ -1,0 +1,501 @@
+{
+  "totals": {
+    "lastfm": 1399311,
+    "suno": 1373650,
+    "udio": 919083
+  },
+  "unique": {
+    "lastfm": 168774,
+    "suno": 90123,
+    "udio": 131332
+  },
+  "correlations": {
+    "lastfm-udio": 0.9621990977828805,
+    "lastfm-suno": 0.6383000996548486,
+    "suno-udio": 0.7372883198973621
+  },
+  "suno_ranked": [
+    {
+      "tetragram": "I\u00b7V\u00b7vi\u00b7IV",
+      "lastfm": 2396,
+      "suno": 15431,
+      "udio": 1957
+    },
+    {
+      "tetragram": "vi\u00b7IV\u00b7I\u00b7V",
+      "lastfm": 2299,
+      "suno": 15413,
+      "udio": 1945
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7V\u00b7vi",
+      "lastfm": 2351,
+      "suno": 15255,
+      "udio": 1950
+    },
+    {
+      "tetragram": "V\u00b7vi\u00b7IV\u00b7I",
+      "lastfm": 2155,
+      "suno": 14604,
+      "udio": 1854
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7IV\u00b7I",
+      "lastfm": 14675,
+      "suno": 5947,
+      "udio": 7315
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7I\u00b7IV",
+      "lastfm": 14771,
+      "suno": 5755,
+      "udio": 7255
+    },
+    {
+      "tetragram": "I\u00b7vi\u00b7IV\u00b7I",
+      "lastfm": 2232,
+      "suno": 5542,
+      "udio": 1438
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7V\u00b7IV",
+      "lastfm": 3656,
+      "suno": 5521,
+      "udio": 2175
+    },
+    {
+      "tetragram": "V\u00b7IV\u00b7I\u00b7V",
+      "lastfm": 3122,
+      "suno": 5427,
+      "udio": 1927
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7IV\u00b7I",
+      "lastfm": 3831,
+      "suno": 5032,
+      "udio": 2287
+    },
+    {
+      "tetragram": "bVI\u00b7bVII\u00b7i\u00b7bVI",
+      "lastfm": 1535,
+      "suno": 4872,
+      "udio": 1400
+    },
+    {
+      "tetragram": "i\u00b7bVI\u00b7bVII\u00b7i",
+      "lastfm": 1626,
+      "suno": 4871,
+      "udio": 1625
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7vi\u00b7IV",
+      "lastfm": 2003,
+      "suno": 4819,
+      "udio": 1235
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7IV\u00b7I",
+      "lastfm": 3640,
+      "suno": 4748,
+      "udio": 3248
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7I\u00b7IV",
+      "lastfm": 3479,
+      "suno": 4565,
+      "udio": 2719
+    },
+    {
+      "tetragram": "vi\u00b7IV\u00b7V\u00b7I",
+      "lastfm": 1352,
+      "suno": 4556,
+      "udio": 1057
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7V\u00b7I",
+      "lastfm": 3622,
+      "suno": 4544,
+      "udio": 2936
+    },
+    {
+      "tetragram": "i\u00b7bVI\u00b7i\u00b7bVI",
+      "lastfm": 4256,
+      "suno": 4437,
+      "udio": 2507
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7V\u00b7I",
+      "lastfm": 2955,
+      "suno": 4313,
+      "udio": 2721
+    },
+    {
+      "tetragram": "vi\u00b7IV\u00b7I\u00b7vi",
+      "lastfm": 1706,
+      "suno": 4301,
+      "udio": 1027
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7I\u00b7V",
+      "lastfm": 3333,
+      "suno": 4212,
+      "udio": 2916
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7IV\u00b7V",
+      "lastfm": 2727,
+      "suno": 4032,
+      "udio": 2351
+    },
+    {
+      "tetragram": "bVII\u00b7i\u00b7bVI\u00b7bVII",
+      "lastfm": 1281,
+      "suno": 3936,
+      "udio": 1221
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7V\u00b7I",
+      "lastfm": 6084,
+      "suno": 3835,
+      "udio": 3277
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7vi\u00b7IV",
+      "lastfm": 1105,
+      "suno": 3769,
+      "udio": 972
+    },
+    {
+      "tetragram": "vi\u00b7V\u00b7IV\u00b7I",
+      "lastfm": 1183,
+      "suno": 3710,
+      "udio": 769
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7I\u00b7V",
+      "lastfm": 5911,
+      "suno": 3692,
+      "udio": 3132
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7I\u00b7vi",
+      "lastfm": 1199,
+      "suno": 3624,
+      "udio": 960
+    },
+    {
+      "tetragram": "V\u00b7vi\u00b7IV\u00b7V",
+      "lastfm": 1295,
+      "suno": 3484,
+      "udio": 968
+    },
+    {
+      "tetragram": "I\u00b7vi\u00b7IV\u00b7V",
+      "lastfm": 1059,
+      "suno": 3458,
+      "udio": 820
+    },
+    {
+      "tetragram": "i\u00b7bVI\u00b7III\u00b7bVII",
+      "lastfm": 629,
+      "suno": 3413,
+      "udio": 672
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7V\u00b7vi",
+      "lastfm": 1012,
+      "suno": 3360,
+      "udio": 758
+    },
+    {
+      "tetragram": "vi\u00b7V\u00b7I\u00b7IV",
+      "lastfm": 921,
+      "suno": 3267,
+      "udio": 674
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7vi\u00b7IV",
+      "lastfm": 1304,
+      "suno": 3235,
+      "udio": 1019
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7I\u00b7IV",
+      "lastfm": 2630,
+      "suno": 3232,
+      "udio": 2539
+    },
+    {
+      "tetragram": "bVI\u00b7III\u00b7bVII\u00b7i",
+      "lastfm": 598,
+      "suno": 3232,
+      "udio": 614
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7vi\u00b7V",
+      "lastfm": 818,
+      "suno": 3044,
+      "udio": 509
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7IV\u00b7vi",
+      "lastfm": 776,
+      "suno": 3027,
+      "udio": 531
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7I\u00b7V",
+      "lastfm": 1807,
+      "suno": 2985,
+      "udio": 1207
+    },
+    {
+      "tetragram": "bVII\u00b7i\u00b7bVI\u00b7III",
+      "lastfm": 554,
+      "suno": 2961,
+      "udio": 556
+    }
+  ],
+  "udio_ranked": [
+    {
+      "tetragram": "IV\u00b7I\u00b7IV\u00b7I",
+      "lastfm": 14675,
+      "suno": 5947,
+      "udio": 7315
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7I\u00b7IV",
+      "lastfm": 14771,
+      "suno": 5755,
+      "udio": 7255
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7V\u00b7I",
+      "lastfm": 6084,
+      "suno": 3835,
+      "udio": 3277
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7IV\u00b7I",
+      "lastfm": 3640,
+      "suno": 4748,
+      "udio": 3248
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7I\u00b7V",
+      "lastfm": 5911,
+      "suno": 3692,
+      "udio": 3132
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7V\u00b7I",
+      "lastfm": 3622,
+      "suno": 4544,
+      "udio": 2936
+    },
+    {
+      "tetragram": "I\u00b7IV\u00b7I\u00b7V",
+      "lastfm": 3333,
+      "suno": 4212,
+      "udio": 2916
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7V\u00b7I",
+      "lastfm": 2955,
+      "suno": 4313,
+      "udio": 2721
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7I\u00b7IV",
+      "lastfm": 3479,
+      "suno": 4565,
+      "udio": 2719
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7I\u00b7IV",
+      "lastfm": 2630,
+      "suno": 3232,
+      "udio": 2539
+    },
+    {
+      "tetragram": "i\u00b7bVI\u00b7i\u00b7bVI",
+      "lastfm": 4256,
+      "suno": 4437,
+      "udio": 2507
+    },
+    {
+      "tetragram": "V\u00b7I\u00b7IV\u00b7V",
+      "lastfm": 2727,
+      "suno": 4032,
+      "udio": 2351
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7IV\u00b7I",
+      "lastfm": 3831,
+      "suno": 5032,
+      "udio": 2287
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7V\u00b7IV",
+      "lastfm": 3656,
+      "suno": 5521,
+      "udio": 2175
+    },
+    {
+      "tetragram": "bVI\u00b7i\u00b7bVI\u00b7i",
+      "lastfm": 3805,
+      "suno": 2930,
+      "udio": 2086
+    },
+    {
+      "tetragram": "I\u00b7V\u00b7vi\u00b7IV",
+      "lastfm": 2396,
+      "suno": 15431,
+      "udio": 1957
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7V\u00b7vi",
+      "lastfm": 2351,
+      "suno": 15255,
+      "udio": 1950
+    },
+    {
+      "tetragram": "vi\u00b7IV\u00b7I\u00b7V",
+      "lastfm": 2299,
+      "suno": 15413,
+      "udio": 1945
+    },
+    {
+      "tetragram": "V\u00b7IV\u00b7I\u00b7V",
+      "lastfm": 3122,
+      "suno": 5427,
+      "udio": 1927
+    },
+    {
+      "tetragram": "V\u00b7vi\u00b7IV\u00b7I",
+      "lastfm": 2155,
+      "suno": 14604,
+      "udio": 1854
+    },
+    {
+      "tetragram": "i\u00b7iv\u00b7i\u00b7iv",
+      "lastfm": 2504,
+      "suno": 1950,
+      "udio": 1770
+    },
+    {
+      "tetragram": "iv\u00b7i\u00b7iv\u00b7i",
+      "lastfm": 2370,
+      "suno": 1595,
+      "udio": 1677
+    },
+    {
+      "tetragram": "i\u00b7bVI\u00b7bVII\u00b7i",
+      "lastfm": 1626,
+      "suno": 4871,
+      "udio": 1625
+    },
+    {
+      "tetragram": "bVII\u00b7i\u00b7bVII\u00b7i",
+      "lastfm": 2204,
+      "suno": 1189,
+      "udio": 1560
+    },
+    {
+      "tetragram": "i\u00b7#V\u00b7i\u00b7#V",
+      "lastfm": 2081,
+      "suno": 1707,
+      "udio": 1547
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7IV\u00b7V",
+      "lastfm": 2186,
+      "suno": 1796,
+      "udio": 1473
+    },
+    {
+      "tetragram": "i\u00b7bVII\u00b7i\u00b7bVII",
+      "lastfm": 2194,
+      "suno": 1119,
+      "udio": 1438
+    },
+    {
+      "tetragram": "I\u00b7vi\u00b7IV\u00b7I",
+      "lastfm": 2232,
+      "suno": 5542,
+      "udio": 1438
+    },
+    {
+      "tetragram": "#VII\u00b7#III\u00b7#VII\u00b7#III",
+      "lastfm": 1838,
+      "suno": 645,
+      "udio": 1430
+    },
+    {
+      "tetragram": "bVI\u00b7bVII\u00b7i\u00b7bVI",
+      "lastfm": 1535,
+      "suno": 4872,
+      "udio": 1400
+    },
+    {
+      "tetragram": "V\u00b7i\u00b7V\u00b7i",
+      "lastfm": 1355,
+      "suno": 2044,
+      "udio": 1400
+    },
+    {
+      "tetragram": "#III\u00b7#VII\u00b7#III\u00b7#VII",
+      "lastfm": 1892,
+      "suno": 685,
+      "udio": 1378
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7IV\u00b7V",
+      "lastfm": 2854,
+      "suno": 1429,
+      "udio": 1315
+    },
+    {
+      "tetragram": "#V\u00b7i\u00b7#V\u00b7i",
+      "lastfm": 1850,
+      "suno": 1037,
+      "udio": 1297
+    },
+    {
+      "tetragram": "V\u00b7IV\u00b7I\u00b7IV",
+      "lastfm": 1920,
+      "suno": 1535,
+      "udio": 1289
+    },
+    {
+      "tetragram": "IV\u00b7I\u00b7vi\u00b7IV",
+      "lastfm": 2003,
+      "suno": 4819,
+      "udio": 1235
+    },
+    {
+      "tetragram": "bVII\u00b7i\u00b7bVI\u00b7bVII",
+      "lastfm": 1281,
+      "suno": 3936,
+      "udio": 1221
+    },
+    {
+      "tetragram": "IV\u00b7V\u00b7I\u00b7V",
+      "lastfm": 1807,
+      "suno": 2985,
+      "udio": 1207
+    },
+    {
+      "tetragram": "i\u00b7V\u00b7i\u00b7V",
+      "lastfm": 1224,
+      "suno": 1586,
+      "udio": 1163
+    },
+    {
+      "tetragram": "V\u00b7IV\u00b7V\u00b7IV",
+      "lastfm": 2652,
+      "suno": 1124,
+      "udio": 1159
+    }
+  ]
+}
