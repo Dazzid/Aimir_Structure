@@ -55,11 +55,11 @@ A track's **Axis rate** is the percentage of its four-chord windows that match. 
 
 <table>
 <tr>
-<td width="50%"><img src="Figures/tetragram_axis_distribution.png" alt="Per-song Axis rate under both measures" width="100%"></td>
-<td width="50%"><img src="Figures/axis_rotation_breakdown.png" alt="Loop versus reordering of the Axis chords" width="100%"></td>
+<td width="50%"><img src="Figures/tetragram_axis_distribution_gate_false.png" alt="Per-song Axis rate under both measures" width="100%"></td>
+<td width="50%"><img src="Figures/axis_rotation_breakdown_gate_false.png" alt="Loop versus reordering of the Axis chords" width="100%"></td>
 </tr>
 <tr>
-<td valign="top"><b>How much of a song is Axis.</b> Distribution of per-song Axis rates among songs with at least 10% Axis content, as histograms with kernel-density curves over them. Panel (a) counts the four chords in any order, panel (b) only the 12 rotations of the loop. Each legend percentage is that collection's share of songs above the 10% threshold: under any ordering 27.9% for Suno against 8.6% for Lastfm and 10.5% for Udio, and under the loop alone 13.6% against 2.8% and 3.3%. Suno's lead widens when only the literal loop counts.</td>
+<td valign="top"><b>How much of a song is Axis.</b> Distribution of per-song Axis rates among songs with at least 10% Axis content, as histograms with kernel-density curves over them. Panel (a) counts the four chords in any order, panel (b) only the 12 rotations of the loop. Each legend percentage is that collection's share of songs above the 10% threshold: under any ordering 28.0% for Suno against 8.6% for Lastfm and 10.5% for Udio, and under the loop alone 13.6% against 2.8% and 3.4%. Suno's lead widens when only the literal loop counts.</td>
 <td valign="top"><b>Loop or rearrangement.</b> Given that a window is built on the Axis chords, is it the loop itself or the same chords in some other order? In panel (a) the solid segment is the loop and the hatched segment the reorderings, the number inside the solid segment is the loop alone, and the number above each bar is the two combined as a share of all four-chord windows. Panel (b) gives the loop's share of that Axis-chord usage, with the dashed line at 50%. When Suno reaches for these chords it plays the loop more often than not (54.3%), whereas Lastfm (36.3%) and Udio (38.5%) more often rearrange them.</td>
 </tr>
 </table>
