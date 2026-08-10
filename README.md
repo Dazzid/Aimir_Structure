@@ -44,13 +44,16 @@ The 30 most frequent chord trigrams in each collection, written as Roman numeral
 
 Prevalence of the axis progression, the `I-V-vi-IV` family, across the three collections.
 
-![Distribution of axis tetragrams per song](Figures/tetragram_axis_distribution.png)
-
-Per-song share of tetragrams belonging to the axis set: (a) all 72 orderings of the four chords, (b) the 12 rotations only. Legend percentages give each collection's overall share.
-
-![Axis rotation breakdown](Figures/axis_rotation_breakdown.png)
-
-(a) Axis-set windows as a percentage of all four-chord windows, where the solid portion is the `I-V-vi-IV` rotations and the hatched portion the remaining orderings. (b) Share of axis-set windows that are a rotation of the loop itself.
+<table>
+<tr>
+<td width="50%"><img src="Figures/tetragram_axis_distribution.png" alt="Distribution of axis tetragrams per song" width="100%"></td>
+<td width="50%"><img src="Figures/axis_rotation_breakdown.png" alt="Axis rotation breakdown" width="100%"></td>
+</tr>
+<tr>
+<td valign="top">Per-song share of tetragrams belonging to the axis set: (a) all 72 orderings of the four chords, (b) the 12 rotations only. Legend percentages give each collection's overall share.</td>
+<td valign="top">(a) Axis-set windows as a percentage of all four-chord windows, where the solid portion is the <code>I-V-vi-IV</code> rotations and the hatched portion the remaining orderings. (b) Share of axis-set windows that are a rotation of the loop itself.</td>
+</tr>
+</table>
 
 ## Repository structure
 
