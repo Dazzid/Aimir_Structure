@@ -36,22 +36,31 @@ For each track we provide:
 
 ### Most frequent chord trigrams
 
-The 30 most frequent chord trigrams in each collection, written as Roman numerals relative to the estimated global key, with each bar split by style tag. Panels from top to bottom: Lastfm (human-composed), Suno, and Udio.
+A trigram is a window of three consecutive chords. Chords are written as Roman numerals relative to each track's estimated global key, so `I-V-vi` names the same harmonic motion whether the song is in C major or E major, which is what makes progressions comparable across a corpus spread over many keys.
+
+Each bar is one trigram and its height is that trigram's share of all trigrams in the collection. **Color splits each bar by the track's style tag** (Pop, Rock, Metal, and so on), so the color shows which genres contribute to a progression, not anything about the progression itself. Panels from top to bottom: Lastfm (human-composed), Suno, Udio.
 
 ![Top 30 chord trigrams per collection](Figures/genres.png)
 
 ### Axis progression
 
-Prevalence of the axis progression, the `I-V-vi-IV` family, across the three collections.
+The "Axis of Awesome" progression is the four chords `I-V-vi-IV` played as a repeating cycle, together with its minor forms `i-bVI-III-bVII` and `i-bVI-bIII-bVII`. It is the most recognizable harmonic cliché in Western popular music, familiar from the comedy routine that stacks dozens of hit songs onto one unchanging loop. Because it is so strongly conventional, the rate at which a collection falls into it works as a compact measure of how far that music sits inside the well-worn center of pop harmony.
+
+The two figures below separate a distinction that is easy to lose: whether music *uses these four chords*, and whether it *plays the actual loop*. A four-chord sliding window passes over each track's chord sequence, and every window is tested against two pattern sets.
+
+- **Any order (72 patterns).** The window's four chords form one of the three Axis sets in any arrangement. Four chords admit 24 orderings, across three sets that gives 72. This asks whether a track draws on the Axis chord material at all.
+- **The loop (12 patterns).** The window follows the cycle's own order. A cycle has no fixed starting point, so `I-V-vi-IV`, `V-vi-IV-I`, `vi-IV-I-V`, and `IV-I-V-vi` are one loop entered at different chords. Four rotations per set gives 12. This asks whether the track plays the progression itself.
+
+A track's **Axis rate** is the percentage of its four-chord windows that match. Note that the color code changes meaning here: in the two figures below **color denotes the collection**, not the genre. Blue is Lastfm, yellow is Suno, orange is Udio.
 
 <table>
 <tr>
-<td width="50%"><img src="Figures/tetragram_axis_distribution.png" alt="Distribution of axis tetragrams per song" width="100%"></td>
-<td width="50%"><img src="Figures/axis_rotation_breakdown.png" alt="Axis rotation breakdown" width="100%"></td>
+<td width="50%"><img src="Figures/tetragram_axis_distribution.png" alt="Per-song Axis rate under both measures" width="100%"></td>
+<td width="50%"><img src="Figures/axis_rotation_breakdown.png" alt="Loop versus reordering of the Axis chords" width="100%"></td>
 </tr>
 <tr>
-<td valign="top">Per-song share of tetragrams belonging to the axis set: (a) all 72 orderings of the four chords, (b) the 12 rotations only. Legend percentages give each collection's overall share.</td>
-<td valign="top">(a) Axis-set windows as a percentage of all four-chord windows, where the solid portion is the <code>I-V-vi-IV</code> rotations and the hatched portion the remaining orderings. (b) Share of axis-set windows that are a rotation of the loop itself.</td>
+<td valign="top"><b>How much of a song is Axis.</b> Distribution of per-song Axis rates among songs with at least 10% Axis content, as histograms with kernel-density curves over them. Panel (a) counts the four chords in any order, panel (b) only the 12 rotations of the loop. Each legend percentage is that collection's share of songs above the 10% threshold: under any ordering 27.9% for Suno against 8.6% for Lastfm and 10.5% for Udio, and under the loop alone 13.6% against 2.8% and 3.3%. Suno's lead widens when only the literal loop counts.</td>
+<td valign="top"><b>Loop or rearrangement.</b> Given that a window is built on the Axis chords, is it the loop itself or the same chords in some other order? In panel (a) the solid segment is the loop and the hatched segment the reorderings, the number inside the solid segment is the loop alone, and the number above each bar is the two combined as a share of all four-chord windows. Panel (b) gives the loop's share of that Axis-chord usage, with the dashed line at 50%. When Suno reaches for these chords it plays the loop more often than not (54.3%), whereas Lastfm (36.3%) and Udio (38.5%) more often rearrange them.</td>
 </tr>
 </table>
 
