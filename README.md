@@ -32,6 +32,26 @@ For each track we provide:
 - Style metadata tags
 - Audio source links
 
+## Figures
+
+### Most frequent chord trigrams
+
+The 30 most frequent chord trigrams in each collection, written as Roman numerals relative to the estimated global key, with each bar split by style tag. Panels from top to bottom: Lastfm (human-composed), Suno, and Udio.
+
+![Top 30 chord trigrams per collection](Figures/genres.png)
+
+### Axis progression
+
+Prevalence of the axis progression, the `I-V-vi-IV` family, across the three collections.
+
+![Distribution of axis tetragrams per song](Figures/tetragram_axis_distribution.png)
+
+Per-song share of tetragrams belonging to the axis set: (a) all 72 orderings of the four chords, (b) the 12 rotations only. Legend percentages give each collection's overall share.
+
+![Axis rotation breakdown](Figures/axis_rotation_breakdown.png)
+
+(a) Axis-set windows as a percentage of all four-chord windows, where the solid portion is the `I-V-vi-IV` rotations and the hatched portion the remaining orderings. (b) Share of axis-set windows that are a rotation of the loop itself.
+
 ## Repository structure
 
 ```
